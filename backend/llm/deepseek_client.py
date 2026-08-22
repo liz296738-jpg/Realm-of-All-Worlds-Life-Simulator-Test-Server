@@ -113,6 +113,9 @@ def _call_turn(messages: list[dict], api_key: str | None = None,
 
     失败时有界重试（1次纠偏），彻底失败返回 {}，调用方走 fallback。
     """
+    import logging
+    logger = logging.getLogger(__name__)
+
     client = _client_for(api_key)
     for attempt in range(2):
         try:
@@ -130,16 +133,29 @@ def _call_turn(messages: list[dict], api_key: str | None = None,
             if (isinstance(narrative, str) and len(narrative) >= NARRATIVE_MIN_CHARS
                     and isinstance(opts, list) and len(opts) > 0):
                 return data
-        except Exception:
-            pass
-        # 纠偏重试
+            # 记录验证失败的具体原因
+            logger.warning(f"_call_turn 验证失败 (attempt {attempt + 1}): "
+                          f"narrative 长度={len(narrative) if isinstance(narrative, str) else 'N/A'}, "
+                          f"options 类型={type(opts).__name__}, options 长度={len(opts) if isinstance(opts, list) else 'N/A'}")
+        except Exception as e:
+            logger.warning(f"_call_turn 异常 (attempt {attempt + 1}): {e}")
+        # 纠偏重试：明确要求 options 必须包含 3-4 个完整选项
         if attempt == 0:
             messages = list(messages)
             if messages and messages[-1].get("role") == "user":
                 nudge = (
-                    "\n\n（你上一次输出的 JSON 不满足要求——narrative 字段缺少有效叙述，"
-                    "或 options 数组为空/缺失。请重新输出完整 JSON，确保 narrative 是"
-                    "充实的叙述正文，options 包含 3-4 个不同选项。这是最后一次机会。）"
+                    "\n\n【🔥 紧急纠正指令 🔥】\n"
+                    "你上一次的输出不符合要求！问题可能是：\n"
+                    "1. narrative 字段为空或太短（必须至少 30 字的完整叙述）\n"
+                    "2. options 数组缺失、为空、或少于 3 个选项\n"
+                    "3. JSON 被截断导致格式错误\n\n"
+                    "【强制要求】请立即重新输出，必须包含：\n"
+                    "• narrative: 完整的故事叙述（至少 30 字）\n"
+                    "• options: 数组，包含恰好 3-4 个选项对象，每个含 label/text/recommended 三字段\n"
+                    "• state_delta: 对象（可为空 {}）\n"
+                    "• notes: 数组（可为空 []）\n"
+                    "• event: 字符串（可为空 \"\"）\n\n"
+                    "这是最后一次机会，请务必输出完整合法的 JSON！"
                 )
                 messages[-1] = {**messages[-1],
                                 "content": messages[-1].get("content", "") + nudge}
