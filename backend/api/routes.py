@@ -265,7 +265,9 @@ def _run_turn(session_id: str, player_action: str, opening: bool = False,
         turn_history = base_history + [user_msg]
         msgs = build_unified_messages(state, turn_history, player_action, tier["chars"], world)
 
-    unified_max_tokens = tier["max_tokens"] + SETTLE_MAX_TOKENS
+    # 统一调用需要足够空间容纳 narrative + options + state_delta
+    # 给 options/delta/notes/event 预留充足空间（6000），支持复杂场景和长叙述
+    unified_max_tokens = tier["max_tokens"] + 6000
 
     def gen():
         try:
