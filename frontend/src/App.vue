@@ -146,9 +146,9 @@ onMounted(async () => {
 
     <ActivationPanel />
 
-    <!-- 设置按钮（右下角浮动，全局可用） -->
-    <button type="button" @click="showSettings = !showSettings" title="外观设置" aria-label="外观设置"
-      class="fixed bottom-6 right-6 z-30 px-3 py-1.5 rounded-full border border-stone-700 bg-stone-900/80 text-sm text-stone-300 backdrop-blur transition hover:border-primary hover:text-primary">
+    <!-- 设置按钮（右上角浮动，全局可用） -->
+    <button type="button" @click="showSettings = !showSettings" title="设置" aria-label="设置"
+      class="fixed top-3 right-3 z-30 px-3 py-1.5 rounded-full border border-stone-700 bg-stone-900/80 text-sm text-stone-300 backdrop-blur transition hover:border-primary hover:text-primary">
       ⚙ 设置
     </button>
     <SettingsPanel v-if="showSettings" @close="showSettings = false" />
