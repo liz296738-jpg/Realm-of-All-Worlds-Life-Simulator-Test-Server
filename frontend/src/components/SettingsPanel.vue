@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { api } from '../api'
-import { ui, draft, updateThemeSettings, updateBackgroundImage, setFreedom, clientId, loadWorlds } from '../store'
+import { ui, draft, updateThemeSettings, updateBackgroundImage, setFreedom, clientId, loadWorlds, entitlement, fmtDate, setActivationOpen } from '../store'
 
 const emit = defineEmits(['close'])
 
@@ -9,10 +9,11 @@ const fileInput = ref(null)   // 隐藏的文件选择框
 const bgBusy = ref(false)     // 图片压缩处理中
 const bgError = ref('')       // 上传/压缩错误提示
 
-// 三个可折叠分组：默认都收起
+// 四个可折叠分组：默认都收起
 const themeOpen = ref(false)    // 「主题」分组
 const freedomOpen = ref(false)  // 「文字数量」分组
 const dataOpen = ref(false)     // 「数据管理」分组
+const subOpen = ref(false)      // 「订阅」分组
 
 // 自由度（文字数量）五档：200 ~ 2000 字
 const FREEDOM_TIERS = [
@@ -141,6 +142,20 @@ async function importData(e) {
 function refreshPage() {
   window.location.reload()
 }
+
+// ── 订阅状态文本 ─────────────────────────
+const statusText = computed(() => {
+  if (entitlement.loading) return '加载中…'
+  if (entitlement.paid) return `已订阅 · 无限游玩（至 ${fmtDate(entitlement.paidUntil)}）`
+  const left = Math.max(0, entitlement.trialLimit - entitlement.trialUsed)
+  return `免费试玩中 · 剩余 ${left} 回合 · 1元/月无限玩`
+})
+
+// 打开订阅/激活码面板：先关设置面板，避免两层 z-50 弹窗重叠
+function openActivation() {
+  setActivationOpen(true)
+  emit('close')
+}
 </script>
 
 <template>
@@ -236,7 +251,7 @@ function refreshPage() {
       </div>
 
       <!-- 数据管理分组（可折叠） -->
-      <div>
+      <div class="border-b border-stone-800 pb-3 mb-3">
         <button type="button" @click="dataOpen = !dataOpen"
           class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
           <span class="font-medium">数据管理</span>
@@ -266,6 +281,22 @@ function refreshPage() {
           <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
             导出为 JSON 备份文件；浏览器清缓存或换设备后，可通过导入恢复世界与存档。
           </p>
+        </div>
+      </div>
+
+      <!-- 订阅分组（可折叠） -->
+      <div>
+        <button type="button" @click="subOpen = !subOpen"
+          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
+          <span class="font-medium">订阅</span>
+          <span class="text-xs text-stone-500">{{ subOpen ? '▾' : '▸' }}</span>
+        </button>
+        <div v-if="subOpen" class="mt-3 px-2">
+          <button type="button" @click="openActivation"
+            class="w-full px-3 py-2 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary">
+            💳 订阅 / 激活码
+          </button>
+          <p class="mt-2 text-[11px] leading-relaxed text-stone-500">{{ statusText }}</p>
         </div>
       </div>
     </div>

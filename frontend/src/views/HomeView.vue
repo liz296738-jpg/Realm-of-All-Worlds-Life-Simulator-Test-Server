@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { api } from '../api'
 import {
   ui, worlds, loadWorlds, SITE_NAME,
-  entitlement, refreshEntitlement, fmtDate, clientId, setActivationOpen,
+  refreshEntitlement, clientId,
 } from '../store'
 
 const emit = defineEmits(['newGame', 'continue'])
@@ -27,13 +27,6 @@ const apiKey = ref(localStorage.getItem('douluo_api_key') || '')
 const buildPhase = ref('')      // '' | 'uploading' | 'error' | 'done'
 const buildMsg = ref('')
 const deleting = ref('')        // 正在删除的世界 id
-
-const statusText = computed(() => {
-  if (entitlement.loading) return '加载中…'
-  if (entitlement.paid) return `已订阅 · 无限游玩（至 ${fmtDate(entitlement.paidUntil)}）`
-  const left = Math.max(0, entitlement.trialLimit - entitlement.trialUsed)
-  return `免费试玩中 · 剩余 ${left} 回合 · 1元/月无限玩`
-})
 
 async function buildWorld() {
   if (buildPhase.value === 'uploading') return
@@ -214,15 +207,6 @@ onMounted(async () => {
           </li>
         </ul>
       </section>
-
-      <!-- 订阅 / 免费试玩状态 -->
-      <div class="text-center mt-8">
-        <button @click="setActivationOpen(true)"
-          class="text-xs text-stone-400 hover:text-amber-300 transition">
-          💳 订阅 / 激活码
-        </button>
-        <p class="text-[11px] text-stone-600 mt-1">{{ statusText }}</p>
-      </div>
     </div>
   </div>
 </template>
