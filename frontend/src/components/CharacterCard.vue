@@ -92,7 +92,7 @@ const genericRows = computed(() => {
       </dl>
       <div class="mt-8 flex gap-3">
         <button @click="emit('back')" class="flex-1 px-4 py-2 rounded bg-stone-800 text-stone-300">返回修改</button>
-        <button @click="emit('confirm')" class="flex-1 px-4 py-2 rounded bg-amber-600 text-stone-950 font-medium">确认，开始游戏</button>
+        <button @click="emit('confirm')" class="flex-1 px-4 py-2 rounded bg-primary text-stone-950 font-medium">确认，开始游戏</button>
       </div>
     </div>
   </div>

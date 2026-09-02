@@ -206,7 +206,7 @@ function close() {
                 :value="getProfile(name).customNotes"
                 @input="onCustomChange(name, $event.target.value)"
                 rows="2"
-                class="w-full mt-1 px-2 py-1 rounded bg-stone-700/60 border border-stone-600 text-stone-200 text-[11px] placeholder-stone-500 resize-y focus:border-amber-600/70 outline-none transition-colors"
+                class="w-full mt-1 px-2 py-1 rounded bg-stone-700/60 border border-stone-600 text-stone-200 text-[11px] placeholder-stone-500 resize-y focus:border-primary outline-none transition-colors"
                 placeholder="手动修改或补充该角色的隐藏设定…"
               ></textarea>
             </div>

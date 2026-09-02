@@ -38,7 +38,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
   <div ref="root" class="fixed top-3 right-3 z-30">
     <button @click.stop="open = !open"
       class="px-2.5 py-1 rounded-full border text-xs font-medium transition backdrop-blur"
-      :class="open ? 'border-amber-500 bg-amber-900/50 text-amber-200' : 'border-stone-700 bg-stone-900/80 text-stone-300 hover:border-amber-600 hover:text-amber-200'"
+      :class="open ? 'border-primary bg-amber-900/50 text-amber-200' : 'border-stone-700 bg-stone-900/80 text-stone-300 hover:border-primary hover:text-amber-200'"
       title="自由度：控制每次选择后生成的文字多少">
       📜 {{ current().label }} · {{ current().chars }}字
     </button>
@@ -54,7 +54,7 @@ onBeforeUnmount(() => document.removeEventListener('click', onDocClick))
           <button v-for="t in TIERS" :key="t.value" @click="pick(t.value)"
             class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded text-sm transition"
             :class="draft.freedom === t.value
-              ? 'border border-amber-600 bg-amber-900/50 text-amber-100'
+              ? 'border border-primary bg-amber-900/50 text-amber-100'
               : 'border border-stone-700 text-stone-300 hover:bg-stone-800'">
             <span class="font-medium">{{ t.label }} <span class="text-xs text-stone-500">· {{ t.chars }}字</span></span>
             <span class="text-xs text-stone-500 text-right shrink-0">{{ t.note }}</span>

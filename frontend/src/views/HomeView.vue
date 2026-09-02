@@ -179,7 +179,7 @@ onMounted(async () => {
         </div>
         <div v-if="worlds.builtin.length" v-show="!isWorldsCollapsed" class="grid gap-3 sm:grid-cols-2">
           <div v-for="w in filteredWorlds" :key="w.id"
-            class="rounded-lg border border-amber-800/50 bg-stone-900/70 p-5 flex flex-col hover:border-amber-500/70 transition">
+            class="rounded-lg border border-amber-800/50 bg-stone-900/70 p-5 flex flex-col hover:border-primary transition">
             <div class="flex items-center justify-between mb-1">
               <h3 class="text-xl font-bold text-amber-200">{{ w.name }}</h3>
               <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-900/60 text-amber-300">创作者</span>
@@ -191,7 +191,7 @@ onMounted(async () => {
                 ▶ 继续冒险（{{ saveForWorld(w.id).name }} · 第{{ saveForWorld(w.id).turn }}回合）
               </button>
               <button @click="emit('newGame', w)"
-                class="w-full py-2.5 rounded-lg bg-amber-600 text-stone-950 font-medium hover:bg-amber-500 transition">
+                class="w-full py-2.5 rounded-lg bg-primary text-stone-950 font-medium hover:opacity-80 transition">
                 进入「{{ w.name }}」
               </button>
             </div>
@@ -222,7 +222,7 @@ onMounted(async () => {
                 ▶ 继续冒险（{{ saveForWorld(w.id).name }} · 第{{ saveForWorld(w.id).turn }}回合）
               </button>
               <button @click="emit('newGame', w)"
-                class="w-full py-2.5 rounded-lg border border-amber-600/60 text-amber-200 hover:bg-amber-900/30 transition">
+                class="w-full py-2.5 rounded-lg border border-primary text-amber-200 hover:bg-amber-900/30 transition">
                 进入「{{ w.name }}」
               </button>
             </div>
@@ -245,7 +245,7 @@ onMounted(async () => {
             <input v-model="apiKey" type="password" @input="onKeyInput" autocomplete="off" placeholder="你的 DeepSeek API Key（sk-...）"
               class="w-full bg-stone-900 border border-stone-700 rounded-lg p-2.5 font-mono text-sm" />
             <button @click="buildWorld" :disabled="buildPhase === 'uploading'"
-              class="w-full py-2.5 rounded-lg bg-amber-600 text-stone-950 font-medium hover:bg-amber-500 transition disabled:opacity-50">
+              class="w-full py-2.5 rounded-lg bg-primary text-stone-950 font-medium hover:opacity-80 transition disabled:opacity-50">
               {{ buildPhase === 'uploading' ? '⏳ 正在生成世界框架…' : '✨ 生成世界框架' }}
             </button>
             <p v-if="buildMsg" :class="buildPhase === 'error' ? 'text-red-400' : 'text-emerald-400'"
@@ -276,7 +276,7 @@ onMounted(async () => {
               </div>
             </div>
             <button @click="continueSave(s)"
-              class="shrink-0 ml-3 px-3 py-1.5 rounded text-xs font-medium bg-amber-600 text-stone-950 hover:bg-amber-500 transition">
+              class="shrink-0 ml-3 px-3 py-1.5 rounded text-xs font-medium bg-primary text-stone-950 hover:opacity-80 transition">
               继续
             </button>
           </li>

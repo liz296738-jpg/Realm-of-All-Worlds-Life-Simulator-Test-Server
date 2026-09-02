@@ -162,9 +162,9 @@ const trialLeft = () => Math.max(0, entitlement.trialLimit - entitlement.trialUs
       <!-- 输码激活 -->
       <input v-model="code" @keyup.enter="submit" :disabled="busy"
         placeholder="粘贴激活码，如 XXXX-XXXX-XXXX"
-        class="w-full mb-2 px-3 py-2 rounded-md bg-stone-800 border border-stone-600 text-stone-100 placeholder-stone-500 focus:border-amber-500 outline-none" />
+        class="w-full mb-2 px-3 py-2 rounded-md bg-stone-800 border border-stone-600 text-stone-100 placeholder-stone-500 focus:border-primary outline-none" />
       <button @click="submit" :disabled="busy"
-        class="w-full py-2.5 rounded-lg bg-amber-600 text-stone-950 font-medium hover:bg-amber-500 disabled:opacity-50 transition">
+        class="w-full py-2.5 rounded-lg bg-primary text-stone-950 font-medium hover:opacity-80 disabled:opacity-50 transition">
         {{ busy ? '激活中…' : '激活' }}
       </button>
 

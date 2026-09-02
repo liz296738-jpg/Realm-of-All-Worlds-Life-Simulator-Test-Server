@@ -61,7 +61,7 @@ watch(() => [game.turns.length, game.error], async () => {
         <div v-if="t.choice" class="mt-3 text-sm text-amber-200/70 border-l-2 border-amber-700/50 pl-3">
           ➤ {{ t.choice }}
         </div>
-        <div v-if="t.event" class="mt-4 text-sm text-amber-300/80 border-l-2 border-amber-600 pl-3">
+        <div v-if="t.event" class="mt-4 text-sm text-amber-300/80 border-l-2 border-primary pl-3">
           ⚔️ 事件：{{ t.event }}
         </div>
         <div v-if="t.notes && t.notes.length" class="mt-3 text-sm text-stone-400 border-l-2 border-stone-600 pl-3">
@@ -81,7 +81,7 @@ watch(() => [game.turns.length, game.error], async () => {
         （AI 未生成有效的叙述文本。请选择一个选项继续，系统将在下一回合重新生成叙述。）
       </div>
       <div v-else class="leading-relaxed text-stone-200 prose-narrative"></div>
-      <div v-if="!showStreaming && game.event" class="mt-4 text-sm text-amber-300/80 border-l-2 border-amber-600 pl-3">
+      <div v-if="!showStreaming && game.event" class="mt-4 text-sm text-amber-300/80 border-l-2 border-primary pl-3">
         ⚔️ 事件：{{ game.event }}
       </div>
       <div v-if="!showStreaming && game.notes.length" class="mt-3 text-sm text-stone-400 border-l-2 border-stone-600 pl-3">

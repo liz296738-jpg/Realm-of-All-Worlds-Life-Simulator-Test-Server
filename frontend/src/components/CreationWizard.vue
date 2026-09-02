@@ -89,7 +89,7 @@ function buildArchive() {
       <div class="flex gap-1 text-xs">
         <span v-for="(label, i) in stepLabels" :key="label"
           class="px-2 py-1 rounded-full"
-          :class="i + 1 === step ? 'bg-amber-600 text-stone-950' : i + 1 < step ? 'bg-stone-700 text-stone-300' : 'bg-stone-800 text-stone-500'">
+          :class="i + 1 === step ? 'bg-primary text-stone-950' : i + 1 < step ? 'bg-stone-700 text-stone-300' : 'bg-stone-800 text-stone-500'">
           {{ label }}
         </span>
       </div>
@@ -103,7 +103,7 @@ function buildArchive() {
           <button v-for="id in IDENTITIES" :key="id.key"
             @click="updateDraft('identity', id.key)"
             class="text-left p-3 rounded border transition"
-            :class="draft.identity === id.key ? 'border-amber-500 bg-amber-900/30' : 'border-stone-700 bg-stone-900 hover:border-stone-500'">
+            :class="draft.identity === id.key ? 'border-primary bg-amber-900/30' : 'border-stone-700 bg-stone-900 hover:border-stone-500'">
             <div class="font-medium text-stone-200">{{ id.key }}</div>
             <div class="text-xs text-stone-400 mt-1">{{ id.hint }}</div>
           </button>
@@ -186,7 +186,7 @@ function buildArchive() {
       </div>
       <div>
         <label class="block text-sm text-stone-400 mb-2">对"变强"的渴望程度：{{ draft.desire }} / 10</label>
-        <input :value="draft.desire" @input="updateDraft('desire', Number($event.target.value) || 0)" type="range" min="0" max="10" class="w-full accent-amber-500" />
+        <input :value="draft.desire" @input="updateDraft('desire', Number($event.target.value) || 0)" type="range" min="0" max="10" class="w-full accent-primary" />
         <div class="flex justify-between text-xs text-stone-500"><span>0 随波逐流</span><span>10 不惜一切代价</span></div>
       </div>
     </div>
@@ -199,7 +199,7 @@ function buildArchive() {
           <button v-for="t in TIERS" :key="t.key"
             @click="pickTier(t.key)"
             class="text-left p-3 rounded border transition"
-            :class="draft.talentTier === t.key ? 'border-amber-500 bg-amber-900/30' : 'border-stone-700 bg-stone-900 hover:border-stone-500'">
+            :class="draft.talentTier === t.key ? 'border-primary bg-amber-900/30' : 'border-stone-700 bg-stone-900 hover:border-stone-500'">
             <div class="font-medium text-stone-200">{{ t.key }} <span class="text-xs text-amber-400">{{ t.range }}</span></div>
             <div class="text-xs text-stone-400 mt-1">{{ t.note }}</div>
           </button>
@@ -230,7 +230,7 @@ function buildArchive() {
           <button v-for="dir in ['强攻系','敏攻系','控制系','辅助系','防御系','食物系']" :key="dir"
             @click="updateDraft('developmentDirection', dir)"
             class="px-3 py-1 rounded-full border text-sm"
-            :class="draft.developmentDirection === dir ? 'border-amber-500 bg-amber-900/40 text-amber-200' : 'border-stone-700 text-stone-400'">
+            :class="draft.developmentDirection === dir ? 'border-primary bg-amber-900/40 text-amber-200' : 'border-stone-700 text-stone-400'">
             {{ dir }}
           </button>
         </div>
@@ -270,9 +270,9 @@ function buildArchive() {
       <button @click="prevStep" :disabled="step === 1"
         class="px-4 py-2 rounded bg-stone-800 text-stone-300 disabled:opacity-30">上一步</button>
       <button v-if="step < total" @click="nextStep"
-        class="px-4 py-2 rounded bg-amber-600 text-stone-950 font-medium">下一步</button>
+        class="px-4 py-2 rounded bg-primary text-stone-950 font-medium">下一步</button>
       <button v-else @click="emit('complete', buildArchive())"
-        class="px-4 py-2 rounded bg-amber-600 text-stone-950 font-medium">查看档案卡</button>
+        class="px-4 py-2 rounded bg-primary text-stone-950 font-medium">查看档案卡</button>
     </div>
   </div>
 </template>

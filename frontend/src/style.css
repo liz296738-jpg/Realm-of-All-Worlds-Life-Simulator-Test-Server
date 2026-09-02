@@ -2,10 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 主题变量安全后备：JS 未加载或注入前，保证样式可读 */
+:root {
+  --theme-color: #d97706;
+  --base-font-size: 16px;
+  --theme-bg: #0c0a09;
+}
+
 html, body, #app { height: 100%; }
 body {
   font-family: 'Georgia', 'Songti SC', 'SimSun', serif;
-  background: #0c0a09;
+  background-color: #0c0a09;          /* 兜底：浏览器不支持 color-mix 时 */
+  background-color: var(--theme-bg);  /* 跟随主题色的暗背景 */
+  background-image: var(--theme-bg-image, none);  /* 自定义背景图（含暗色遮罩），无则纯色 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-size: var(--base-font-size);
+  transition: font-size 0.2s ease, color 0.2s ease, background-color 0.2s ease;
 }
 
 /* 细滚动条 */

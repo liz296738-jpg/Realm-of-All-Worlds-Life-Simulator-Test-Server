@@ -87,7 +87,7 @@ onMounted(refresh)
 
         <div class="flex gap-2 mb-4">
           <button @click="doSave" :disabled="loading || !game.sessionId"
-            class="flex-1 px-3 py-2 rounded bg-amber-600 text-stone-950 text-sm font-medium disabled:opacity-30">
+            class="flex-1 px-3 py-2 rounded bg-primary text-stone-950 text-sm font-medium disabled:opacity-30">
             💾 存档当前进度
           </button>
           <button @click="goHome"

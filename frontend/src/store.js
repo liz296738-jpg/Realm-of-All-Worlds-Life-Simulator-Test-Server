@@ -30,6 +30,11 @@ const _ui = reactive({
   busy: false,
   activationOpen: false,   // 订阅/激活弹窗
   activationMsg: '',       // 触发弹窗的原因提示（门禁 403 时的说明）
+  // 主题样式：默认值作为兜底，本地无记录时生效；随后由 updateThemeSettings 持久化
+  themeColor: localStorage.getItem('wanjie_theme_color') || '#d97706',
+  baseFontSize: Number(localStorage.getItem('wanjie_font_size')) || 16,
+  // 自定义背景图（base64 data URL）；空串 = 未设置，使用跟随主题色的纯色背景
+  bgImage: localStorage.getItem('wanjie_bg_image') || '',
 })
 
 const _worlds = reactive({
@@ -199,6 +204,53 @@ export function setActivationOpen(isOpen, msg) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+//  Actions — ui：主题样式（主题色 / 背景图 / 基础字号）
+// ═══════════════════════════════════════════════════════════════
+
+/** 由 base64 背景图拼出「暗色遮罩 + 图」的 CSS 背景层；无图返回 none。 */
+function _bgImageStack(dataUrl) {
+  if (!dataUrl) return 'none'
+  // 近黑半透明遮罩盖在图上，保证浅色文字始终可读
+  return `linear-gradient(rgba(12, 10, 9, 0.55), rgba(12, 10, 9, 0.72)), url("${dataUrl}")`
+}
+
+/** 将主题色、背景图与字号注入 DOM 根节点的 CSS 变量
+ *  （--theme-color / --theme-bg / --theme-bg-image / --base-font-size）。 */
+function _applyThemeSettings() {
+  document.documentElement.style.setProperty('--theme-color', _ui.themeColor)
+  document.documentElement.style.setProperty('--base-font-size', _ui.baseFontSize + 'px')
+  // 背景跟随主题：把主题色低比例混入近黑底色，得到同色相的暗背景（15% 保证可见、又足够暗以保可读性）
+  document.documentElement.style.setProperty('--theme-bg', `color-mix(in srgb, ${_ui.themeColor} 15%, #0c0a09)`)
+  document.documentElement.style.setProperty('--theme-bg-image', _bgImageStack(_ui.bgImage))
+}
+
+/** 更新主题样式：改响应式状态 → 持久化到 localStorage → 注入 CSS 变量。 */
+export function updateThemeSettings(color, size) {
+  _ui.themeColor = color
+  _ui.baseFontSize = size
+  localStorage.setItem('wanjie_theme_color', color)
+  localStorage.setItem('wanjie_font_size', String(size))
+  _applyThemeSettings()
+}
+
+/** 设置自定义背景图（base64 data URL）。传空串清除，恢复跟随主题色的纯色背景。 */
+export function updateBackgroundImage(dataUrl) {
+  if (dataUrl) {
+    try {
+      localStorage.setItem('wanjie_bg_image', dataUrl)
+    } catch (e) {
+      // 存储空间不足（配额超限）等：不改状态，抛给调用方提示
+      throw new Error('背景图太大，保存失败（浏览器存储空间不足）')
+    }
+    _ui.bgImage = dataUrl
+  } else {
+    localStorage.removeItem('wanjie_bg_image')
+    _ui.bgImage = ''
+  }
+  _applyThemeSettings()
+}
+
+// ═══════════════════════════════════════════════════════════════
 //  Actions — worlds
 // ═══════════════════════════════════════════════════════════════
 
@@ -312,3 +364,9 @@ export function patchNpcState(name, update) {
     Object.assign(npcs[name], update)
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  初始化：预挂载本地存储的主题样式到 DOM 根节点
+// ═══════════════════════════════════════════════════════════════
+// 模块加载时执行一次，确保首屏在组件挂载前就应用了已保存的主题色与字号。
+_applyThemeSettings()

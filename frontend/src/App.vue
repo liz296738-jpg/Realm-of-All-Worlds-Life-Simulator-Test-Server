@@ -18,8 +18,10 @@ import GenericWizard from './components/GenericWizard.vue'
 import CharacterCard from './components/CharacterCard.vue'
 import FreedomControl from './components/FreedomControl.vue'
 import ActivationPanel from './components/ActivationPanel.vue'
+import SettingsPanel from './components/SettingsPanel.vue'
 
 const archive = ref(null)
+const showSettings = ref(false)  // 设置面板显示/隐藏
 
 // 开局时选中的世界决定向导与加载文案；读档/续玩时以会话自带世界为准
 const loadingText = computed(() => {
@@ -145,6 +147,13 @@ onMounted(async () => {
 
     <FreedomControl v-if="ui.view !== 'home'" />
     <ActivationPanel />
+
+    <!-- 设置按钮（右下角浮动，全局可用） -->
+    <button type="button" @click="showSettings = !showSettings" title="外观设置" aria-label="外观设置"
+      class="fixed bottom-6 right-6 z-30 px-3 py-1.5 rounded-full border border-stone-700 bg-stone-900/80 text-sm text-stone-300 backdrop-blur transition hover:border-primary hover:text-primary">
+      ⚙ 设置
+    </button>
+    <SettingsPanel v-if="showSettings" @close="showSettings = false" />
 
     <div v-if="ui.busy" class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center text-stone-200">
       {{ loadingText }}

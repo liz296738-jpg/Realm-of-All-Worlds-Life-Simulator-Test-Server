@@ -25,8 +25,8 @@ function onFreeSubmit() {
         :aria-expanded="open"
         class="w-full flex items-center justify-between px-4 py-2 rounded border text-sm transition"
         :class="open
-          ? 'border-amber-600/80 bg-amber-900/20 text-amber-100'
-          : 'border-stone-700 bg-stone-900 text-amber-200 hover:border-amber-600'">
+          ? 'border-primary bg-amber-900/20 text-amber-100'
+          : 'border-stone-700 bg-stone-900 text-amber-200 hover:border-primary'">
         <span class="flex items-center gap-2">
           <span class="inline-block transition-transform text-xs" :class="open ? 'rotate-90' : ''">▶</span>
           <span v-if="game.options.length">下一步怎么走 · {{ game.options.length }} 个选项</span>
@@ -41,15 +41,15 @@ function onFreeSubmit() {
           class="px-4 py-2 rounded-full border text-sm text-amber-100 transition text-left"
           :class="opt.recommended
             ? 'border-amber-400/90 bg-amber-900/30 hover:bg-amber-900/50'
-            : 'border-amber-700/70 hover:bg-amber-900/40 hover:border-amber-500'">
+            : 'border-amber-700/70 hover:bg-amber-900/40 hover:border-primary'">
           <span class="font-bold text-amber-400 mr-1">[{{ opt.label }}]</span>{{ opt.text }}
           <span v-if="opt.recommended"
-            class="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500 text-stone-950 font-semibold align-middle">系统推荐</span>
+            class="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-stone-950 font-semibold align-middle">系统推荐</span>
         </button>
         <!-- 后悔：退回上一回合 -->
         <button v-if="game.canUndo" @click="emit('undo')" type="button"
           class="px-4 py-2 rounded-full border border-dashed border-stone-600 text-sm text-stone-400
-                 hover:border-amber-600 hover:text-amber-200 transition text-left"
+                 hover:border-primary hover:text-amber-200 transition text-left"
           title="撤销上一次选择，回到上一回合的选项">
           ↩ 后悔
         </button>
@@ -63,7 +63,7 @@ function onFreeSubmit() {
           class="flex-1 bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-200
                  disabled:opacity-40 placeholder-stone-600" />
         <button type="submit" :disabled="!game.turnDone || !freeInput.trim()"
-          class="px-4 py-2 rounded bg-amber-600 text-stone-950 font-medium disabled:opacity-30">行动</button>
+          class="px-4 py-2 rounded bg-primary text-stone-950 font-medium disabled:opacity-30">行动</button>
       </form>
     </div>
   </div>

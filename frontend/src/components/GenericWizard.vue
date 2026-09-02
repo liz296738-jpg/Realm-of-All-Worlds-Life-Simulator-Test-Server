@@ -54,7 +54,7 @@ function buildArchive() {
       <div class="flex flex-wrap gap-1 text-xs">
         <span v-for="(st, i) in steps" :key="st.step"
           class="px-2 py-1 rounded-full"
-          :class="i + 1 === step ? 'bg-amber-600 text-stone-950' : i + 1 < step ? 'bg-stone-700 text-stone-300' : 'bg-stone-800 text-stone-500'">
+          :class="i + 1 === step ? 'bg-primary text-stone-950' : i + 1 < step ? 'bg-stone-700 text-stone-300' : 'bg-stone-800 text-stone-500'">
           {{ st.step }}
         </span>
       </div>
@@ -84,7 +84,7 @@ function buildArchive() {
           class="w-full bg-stone-900 border border-stone-700 rounded p-2 text-stone-200" />
         <!-- boolean -->
         <label v-else-if="f.type === 'boolean'" class="flex items-center gap-2 cursor-pointer">
-          <input v-model="form[f.key]" type="checkbox" class="accent-amber-500 w-4 h-4" />
+          <input v-model="form[f.key]" type="checkbox" class="accent-primary w-4 h-4" />
           <span class="text-sm text-stone-300">{{ f.checkbox_label || '是' }}</span>
         </label>
         <!-- multiselect：文本输入，逗号分隔多选 -->
@@ -112,9 +112,9 @@ function buildArchive() {
       <button @click="prevStep" :disabled="step === 1"
         class="px-4 py-2 rounded bg-stone-800 text-stone-300 disabled:opacity-30">上一步</button>
       <button v-if="step < steps.length" @click="nextStep"
-        class="px-4 py-2 rounded bg-amber-600 text-stone-950 font-medium">下一步</button>
+        class="px-4 py-2 rounded bg-primary text-stone-950 font-medium">下一步</button>
       <button v-else @click="emit('complete', buildArchive())"
-        class="px-4 py-2 rounded bg-amber-600 text-stone-950 font-medium">查看档案卡</button>
+        class="px-4 py-2 rounded bg-primary text-stone-950 font-medium">查看档案卡</button>
     </div>
   </div>
 </template>
