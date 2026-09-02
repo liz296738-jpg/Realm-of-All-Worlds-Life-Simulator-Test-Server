@@ -8,6 +8,10 @@ const fileInput = ref(null)   // 隐藏的文件选择框
 const bgBusy = ref(false)     // 图片压缩处理中
 const bgError = ref('')       // 上传/压缩错误提示
 
+// 两个可折叠分组：默认都收起
+const themeOpen = ref(false)    // 「主题」分组
+const freedomOpen = ref(false)  // 「文字数量」分组
+
 // 自由度（文字数量）五档：200 ~ 2000 字
 const FREEDOM_TIERS = [
   { value: 1, label: '精炼', chars: 200, note: '短小精悍，快节奏推进' },
@@ -83,74 +87,92 @@ function clearBgImage() {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
     @click.self="emit('close')">
     <div class="w-full max-w-sm rounded-xl border border-stone-700 bg-stone-900/95 p-5 shadow-2xl backdrop-blur">
-      <div class="mb-5 flex items-center justify-between">
+      <div class="mb-4 flex items-center justify-between">
         <h2 class="font-medium text-amber-200">设置</h2>
         <button type="button" @click="emit('close')"
-          class="text-lg leading-none text-stone-500 transition hover:text-stone-300">✕</button>
+          class="px-3 py-1.5 rounded text-sm font-medium bg-primary text-stone-950 transition hover:opacity-80">
+          完成
+        </button>
       </div>
 
-      <!-- 主题色 -->
-      <div class="mb-5">
-        <label for="theme-color" class="mb-2 block text-sm text-stone-300">主题色</label>
-        <div class="flex items-center gap-3">
-          <input id="theme-color" type="color" :value="ui.themeColor" @input="onColorInput"
-            class="h-10 w-16 cursor-pointer rounded border border-stone-700 bg-stone-800 p-1" />
-          <span class="font-mono text-xs text-stone-400">{{ ui.themeColor }}</span>
+      <!-- 主题分组（可折叠） -->
+      <div class="border-b border-stone-800 pb-3 mb-3">
+        <button type="button" @click="themeOpen = !themeOpen"
+          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
+          <span class="font-medium">主题</span>
+          <span class="text-xs text-stone-500">{{ themeOpen ? '▾' : '▸' }}</span>
+        </button>
+        <div v-if="themeOpen" class="mt-3 space-y-5 px-2">
+          <!-- 主题色 -->
+          <div>
+            <label for="theme-color" class="mb-2 block text-sm text-stone-300">主题色</label>
+            <div class="flex items-center gap-3">
+              <input id="theme-color" type="color" :value="ui.themeColor" @input="onColorInput"
+                class="h-10 w-16 cursor-pointer rounded border border-stone-700 bg-stone-800 p-1" />
+              <span class="font-mono text-xs text-stone-400">{{ ui.themeColor }}</span>
+            </div>
+          </div>
+
+          <!-- 背景图 -->
+          <div>
+            <label class="mb-2 block text-sm text-stone-300">背景图</label>
+            <div class="flex items-center gap-3">
+              <button type="button" :disabled="bgBusy" @click="fileInput.click()"
+                class="px-3 py-1.5 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary disabled:opacity-50">
+                {{ bgBusy ? '处理中…' : (ui.bgImage ? '更换图片' : '上传图片') }}
+              </button>
+              <button v-if="ui.bgImage" type="button" @click="clearBgImage"
+                class="px-3 py-1.5 rounded border border-stone-700 text-sm text-stone-400 transition hover:border-red-500/50 hover:text-red-400">
+                清除
+              </button>
+              <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileChange" />
+            </div>
+            <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
+              支持常见图片格式；上传后自动等比压缩以节省空间，并叠加暗色遮罩保证文字可读。
+            </p>
+            <p v-if="bgError" class="mt-1 text-[11px] text-red-400">{{ bgError }}</p>
+            <div v-if="ui.bgImage" class="mt-2 overflow-hidden rounded border border-stone-700">
+              <img :src="ui.bgImage" alt="背景预览" class="h-20 w-full object-cover" />
+            </div>
+          </div>
+
+          <!-- 字体大小 -->
+          <div>
+            <label for="font-size" class="mb-2 block text-sm text-stone-300">
+              字体大小 <span class="font-mono text-amber-400">{{ ui.baseFontSize }}px</span>
+            </label>
+            <input id="font-size" type="range" min="12" max="24" step="1" :value="ui.baseFontSize" @input="onSizeInput"
+              class="w-full accent-primary" />
+            <div class="mt-1 flex justify-between text-[11px] text-stone-500">
+              <span>小 · 12</span>
+              <span>大 · 24</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 背景图 -->
-      <div class="mb-5">
-        <label class="mb-2 block text-sm text-stone-300">背景图</label>
-        <div class="flex items-center gap-3">
-          <button type="button" :disabled="bgBusy" @click="fileInput.click()"
-            class="px-3 py-1.5 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary disabled:opacity-50">
-            {{ bgBusy ? '处理中…' : (ui.bgImage ? '更换图片' : '上传图片') }}
-          </button>
-          <button v-if="ui.bgImage" type="button" @click="clearBgImage"
-            class="px-3 py-1.5 rounded border border-stone-700 text-sm text-stone-400 transition hover:border-red-500/50 hover:text-red-400">
-            清除
-          </button>
-          <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileChange" />
-        </div>
-        <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
-          支持常见图片格式；上传后自动等比压缩以节省空间，并叠加暗色遮罩保证文字可读。
-        </p>
-        <p v-if="bgError" class="mt-1 text-[11px] text-red-400">{{ bgError }}</p>
-        <div v-if="ui.bgImage" class="mt-2 overflow-hidden rounded border border-stone-700">
-          <img :src="ui.bgImage" alt="背景预览" class="h-20 w-full object-cover" />
-        </div>
-      </div>
-
-      <!-- 字体大小 -->
+      <!-- 文字数量分组（可折叠） -->
       <div>
-        <label for="font-size" class="mb-2 block text-sm text-stone-300">
-          字体大小 <span class="font-mono text-amber-400">{{ ui.baseFontSize }}px</span>
-        </label>
-        <input id="font-size" type="range" min="12" max="24" step="1" :value="ui.baseFontSize" @input="onSizeInput"
-          class="w-full accent-primary" />
-        <div class="mt-1 flex justify-between text-[11px] text-stone-500">
-          <span>小 · 12</span>
-          <span>大 · 24</span>
+        <button type="button" @click="freedomOpen = !freedomOpen"
+          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
+          <span class="font-medium">文字数量</span>
+          <span class="text-xs text-stone-500">{{ freedomOpen ? '▾' : '▸' }}</span>
+        </button>
+        <div v-if="freedomOpen" class="mt-3 px-2">
+          <div class="space-y-1.5">
+            <button v-for="t in FREEDOM_TIERS" :key="t.value" type="button" @click="setFreedom(t.value)"
+              class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded text-sm transition"
+              :class="draft.freedom === t.value
+                ? 'border border-primary bg-amber-900/50 text-amber-100'
+                : 'border border-stone-700 text-stone-300 hover:bg-stone-800'">
+              <span class="font-medium">{{ t.label }} <span class="text-xs text-stone-500">· {{ t.chars }}字</span></span>
+              <span class="text-xs text-stone-500 text-right shrink-0">{{ t.note }}</span>
+            </button>
+          </div>
+          <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
+            决定每次选择后 AI 生成的剧情文字多少：档位越高文字越长、细节越丰富，生成耗时也相应增加。
+          </p>
         </div>
-      </div>
-
-      <!-- 文字数量（自由度） -->
-      <div class="mt-5 border-t border-stone-800 pt-4">
-        <label class="mb-2 block text-sm text-stone-300">文字数量（自由度）</label>
-        <div class="space-y-1.5">
-          <button v-for="t in FREEDOM_TIERS" :key="t.value" type="button" @click="setFreedom(t.value)"
-            class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded text-sm transition"
-            :class="draft.freedom === t.value
-              ? 'border border-primary bg-amber-900/50 text-amber-100'
-              : 'border border-stone-700 text-stone-300 hover:bg-stone-800'">
-            <span class="font-medium">{{ t.label }} <span class="text-xs text-stone-500">· {{ t.chars }}字</span></span>
-            <span class="text-xs text-stone-500 text-right shrink-0">{{ t.note }}</span>
-          </button>
-        </div>
-        <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
-          决定每次选择后 AI 生成的剧情文字多少：档位越高文字越长、细节越丰富，生成耗时也相应增加。
-        </p>
       </div>
     </div>
   </div>
