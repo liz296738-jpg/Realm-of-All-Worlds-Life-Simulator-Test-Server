@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { ui, draft, updateThemeSettings, updateBackgroundImage, setFreedom } from '../store'
+import { api } from '../api'
+import { ui, draft, updateThemeSettings, updateBackgroundImage, setFreedom, clientId, loadWorlds } from '../store'
 
 const emit = defineEmits(['close'])
 
@@ -8,9 +9,10 @@ const fileInput = ref(null)   // 隐藏的文件选择框
 const bgBusy = ref(false)     // 图片压缩处理中
 const bgError = ref('')       // 上传/压缩错误提示
 
-// 两个可折叠分组：默认都收起
+// 三个可折叠分组：默认都收起
 const themeOpen = ref(false)    // 「主题」分组
 const freedomOpen = ref(false)  // 「文字数量」分组
+const dataOpen = ref(false)     // 「数据管理」分组
 
 // 自由度（文字数量）五档：200 ~ 2000 字
 const FREEDOM_TIERS = [
@@ -80,6 +82,64 @@ async function onFileChange(e) {
 function clearBgImage() {
   bgError.value = ''
   updateBackgroundImage('')
+}
+
+// ── 数据管理：导出 / 导入 / 刷新 ─────────────────────────
+const exporting = ref(false)
+const dataMsg = ref('')
+const dataMsgType = ref('ok')  // 'ok' | 'err'
+
+async function exportData() {
+  if (exporting.value) return
+  exporting.value = true
+  dataMsg.value = ''
+  try {
+    const blob = await api.exportAll({ client_id: clientId() })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const ts = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+    a.download = `万界人生模拟器-备份-${ts}.json`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+    dataMsg.value = '导出成功，请妥善保存文件'
+    dataMsgType.value = 'ok'
+  } catch (e) {
+    dataMsg.value = '导出失败：' + e.message
+    dataMsgType.value = 'err'
+  } finally { exporting.value = false }
+}
+
+async function importData(e) {
+  const f = e.target.files?.[0]
+  if (!f) return
+  dataMsg.value = '正在导入…'
+  dataMsgType.value = 'ok'
+  try {
+    const fd = new FormData()
+    fd.append('file', f)
+    fd.append('client_id', clientId())
+    const r = await api.importAll(fd)
+    const parts = []
+    if (r.worlds_imported) parts.push(`${r.worlds_imported} 个世界`)
+    if (r.saves_imported) parts.push(`${r.saves_imported} 个存档`)
+    const skipped = (r.worlds_skipped || 0) + (r.saves_skipped || 0)
+    let msg = parts.length ? `已恢复 ${parts.join('、')}` : '没有新数据可导入'
+    if (skipped) msg += `，${skipped} 项已存在已跳过`
+    dataMsg.value = msg
+    dataMsgType.value = 'ok'
+    await loadWorlds()
+  } catch (e) {
+    dataMsg.value = '导入失败：' + e.message
+    dataMsgType.value = 'err'
+  }
+  e.target.value = ''
+}
+
+function refreshPage() {
+  window.location.reload()
 }
 </script>
 
@@ -152,7 +212,7 @@ function clearBgImage() {
       </div>
 
       <!-- 文字数量分组（可折叠） -->
-      <div>
+      <div class="border-b border-stone-800 pb-3 mb-3">
         <button type="button" @click="freedomOpen = !freedomOpen"
           class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
           <span class="font-medium">文字数量</span>
@@ -171,6 +231,40 @@ function clearBgImage() {
           </div>
           <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
             决定每次选择后 AI 生成的剧情文字多少：档位越高文字越长、细节越丰富，生成耗时也相应增加。
+          </p>
+        </div>
+      </div>
+
+      <!-- 数据管理分组（可折叠） -->
+      <div>
+        <button type="button" @click="dataOpen = !dataOpen"
+          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
+          <span class="font-medium">数据管理</span>
+          <span class="text-xs text-stone-500">{{ dataOpen ? '▾' : '▸' }}</span>
+        </button>
+        <div v-if="dataOpen" class="mt-3 px-2">
+          <div class="space-y-2">
+            <button type="button" @click="exportData" :disabled="exporting"
+              class="w-full px-3 py-2 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary disabled:opacity-50">
+              {{ exporting ? '⏳ 导出中…' : '📥 导出数据' }}
+            </button>
+            <label class="block w-full px-3 py-2 rounded border border-stone-700 text-sm text-stone-300 text-center transition hover:border-primary hover:text-primary cursor-pointer">
+              📤 导入数据
+              <input type="file" accept=".json" @change="importData" class="hidden" />
+            </label>
+            <button type="button" @click="refreshPage"
+              class="w-full px-3 py-2 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary">
+              🔄 刷新页面
+            </button>
+          </div>
+          <p v-if="dataMsg" :class="[
+            'mt-2 px-3 py-2 rounded border text-[11px] leading-relaxed',
+            dataMsgType === 'err'
+              ? 'bg-red-900/40 border-red-800 text-red-200'
+              : 'bg-emerald-900/40 border-emerald-800 text-emerald-100'
+          ]">{{ dataMsg }}</p>
+          <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
+            导出为 JSON 备份文件；浏览器清缓存或换设备后，可通过导入恢复世界与存档。
           </p>
         </div>
       </div>

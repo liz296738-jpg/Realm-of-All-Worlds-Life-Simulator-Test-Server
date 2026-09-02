@@ -27,10 +27,6 @@ const apiKey = ref(localStorage.getItem('douluo_api_key') || '')
 const buildPhase = ref('')      // '' | 'uploading' | 'error' | 'done'
 const buildMsg = ref('')
 const deleting = ref('')        // 正在删除的世界 id
-const exporting = ref(false)
-const dataMsg = ref('')
-const dataMsgType = ref('ok')  // 'ok' | 'err'
-const refreshing = ref(false)
 
 const statusText = computed(() => {
   if (entitlement.loading) return '加载中…'
@@ -71,70 +67,6 @@ async function delWorld(w) {
     await api.deleteWorld({ world_id: w.id, client_id: clientId() })
     await loadWorlds()
   } catch (e) { alert(e.message) } finally { deleting.value = '' }
-}
-
-async function exportData() {
-  if (exporting.value) return
-  exporting.value = true
-  dataMsg.value = ''
-  try {
-    const blob = await api.exportAll({ client_id: clientId() })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const ts = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-    a.download = `万界人生模拟器-备份-${ts}.json`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
-    dataMsg.value = '导出成功，请妥善保存文件'
-    dataMsgType.value = 'ok'
-  } catch (e) {
-    dataMsg.value = '导出失败：' + e.message
-    dataMsgType.value = 'err'
-  } finally { exporting.value = false }
-}
-
-async function importData(e) {
-  const f = e.target.files?.[0]
-  if (!f) return
-  dataMsg.value = '正在导入…'
-  dataMsgType.value = 'ok'
-  try {
-    const fd = new FormData()
-    fd.append('file', f)
-    fd.append('client_id', clientId())
-    const r = await api.importAll(fd)
-    const parts = []
-    if (r.worlds_imported) parts.push(`${r.worlds_imported} 个世界`)
-    if (r.saves_imported) parts.push(`${r.saves_imported} 个存档`)
-    const skipped = (r.worlds_skipped || 0) + (r.saves_skipped || 0)
-    let msg = parts.length ? `已恢复 ${parts.join('、')}` : '没有新数据可导入'
-    if (skipped) msg += `，${skipped} 项已存在已跳过`
-    dataMsg.value = msg
-    dataMsgType.value = 'ok'
-    await loadWorlds()
-    try { const d = await api.saves(clientId()); sessions.value = d.saves || [] } catch {}
-  } catch (e) {
-    dataMsg.value = '导入失败：' + e.message
-    dataMsgType.value = 'err'
-  }
-  e.target.value = ''
-}
-
-async function refreshPage() {
-  if (refreshing.value) return
-  refreshing.value = true
-  try {
-    await loadWorlds()
-    try { const d = await api.saves(clientId()); sessions.value = d.saves || [] } catch {}
-    dataMsg.value = '页面已刷新'
-    dataMsgType.value = 'ok'
-  } catch {
-    dataMsg.value = '刷新失败'
-    dataMsgType.value = 'err'
-  } finally { refreshing.value = false }
 }
 
 // 找出与指定世界关联的存档
@@ -282,31 +214,6 @@ onMounted(async () => {
           </li>
         </ul>
       </section>
-
-      <!-- 数据备份 -->
-      <div class="text-center mt-6 pt-6 border-t border-stone-800">
-        <div class="flex justify-center gap-4">
-          <button @click="exportData" :disabled="exporting"
-            class="text-xs text-stone-400 hover:text-amber-300 transition disabled:opacity-40">
-            {{ exporting ? '⏳ 导出中…' : '📥 导出数据' }}
-          </button>
-          <label class="text-xs text-stone-400 hover:text-amber-300 transition cursor-pointer">
-            📤 导入恢复
-            <input type="file" accept=".json" @change="importData" class="hidden" />
-          </label>
-          <button @click="refreshPage" :disabled="refreshing"
-            class="text-xs text-stone-400 hover:text-amber-300 transition disabled:opacity-40">
-            {{ refreshing ? '⏳' : '🔄' }} 刷新页面
-          </button>
-        </div>
-        <p class="text-[11px] text-stone-600 mt-1">定期导出备份，浏览器清缓存后可导入恢复</p>
-        <p v-if="dataMsg" :class="[
-          'text-sm mt-3 px-3 py-2 rounded-lg border text-center',
-          dataMsgType === 'err'
-            ? 'bg-red-900/40 border-red-800 text-red-200'
-            : 'bg-emerald-900/40 border-emerald-800 text-emerald-100'
-        ]">{{ dataMsg }}</p>
-      </div>
 
       <!-- 订阅 / 免费试玩状态 -->
       <div class="text-center mt-8">
