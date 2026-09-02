@@ -1,12 +1,21 @@
 <script setup>
 import { ref } from 'vue'
-import { ui, updateThemeSettings, updateBackgroundImage } from '../store'
+import { ui, draft, updateThemeSettings, updateBackgroundImage, setFreedom } from '../store'
 
 const emit = defineEmits(['close'])
 
 const fileInput = ref(null)   // 隐藏的文件选择框
 const bgBusy = ref(false)     // 图片压缩处理中
 const bgError = ref('')       // 上传/压缩错误提示
+
+// 自由度（文字数量）五档：200 ~ 2000 字
+const FREEDOM_TIERS = [
+  { value: 1, label: '精炼', chars: 200, note: '短小精悍，快节奏推进' },
+  { value: 2, label: '简洁', chars: 500, note: '适度展开，节奏较快' },
+  { value: 3, label: '标准', chars: 1000, note: '剧情适中 · 默认' },
+  { value: 4, label: '详尽', chars: 1500, note: '细节丰富，沉浸感强' },
+  { value: 5, label: '极尽', chars: 2000, note: '事无巨细，最长生成' },
+]
 
 // 调色盘：只改主题色，字号维持当前值
 function onColorInput(e) {
@@ -75,7 +84,7 @@ function clearBgImage() {
     @click.self="emit('close')">
     <div class="w-full max-w-sm rounded-xl border border-stone-700 bg-stone-900/95 p-5 shadow-2xl backdrop-blur">
       <div class="mb-5 flex items-center justify-between">
-        <h2 class="font-medium text-amber-200">外观设置</h2>
+        <h2 class="font-medium text-amber-200">设置</h2>
         <button type="button" @click="emit('close')"
           class="text-lg leading-none text-stone-500 transition hover:text-stone-300">✕</button>
       </div>
@@ -124,6 +133,24 @@ function clearBgImage() {
           <span>小 · 12</span>
           <span>大 · 24</span>
         </div>
+      </div>
+
+      <!-- 文字数量（自由度） -->
+      <div class="mt-5 border-t border-stone-800 pt-4">
+        <label class="mb-2 block text-sm text-stone-300">文字数量（自由度）</label>
+        <div class="space-y-1.5">
+          <button v-for="t in FREEDOM_TIERS" :key="t.value" type="button" @click="setFreedom(t.value)"
+            class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded text-sm transition"
+            :class="draft.freedom === t.value
+              ? 'border border-primary bg-amber-900/50 text-amber-100'
+              : 'border border-stone-700 text-stone-300 hover:bg-stone-800'">
+            <span class="font-medium">{{ t.label }} <span class="text-xs text-stone-500">· {{ t.chars }}字</span></span>
+            <span class="text-xs text-stone-500 text-right shrink-0">{{ t.note }}</span>
+          </button>
+        </div>
+        <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
+          决定每次选择后 AI 生成的剧情文字多少：档位越高文字越长、细节越丰富，生成耗时也相应增加。
+        </p>
       </div>
     </div>
   </div>

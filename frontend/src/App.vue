@@ -16,7 +16,6 @@ import GameView from './views/GameView.vue'
 import CreationWizard from './components/CreationWizard.vue'
 import GenericWizard from './components/GenericWizard.vue'
 import CharacterCard from './components/CharacterCard.vue'
-import FreedomControl from './components/FreedomControl.vue'
 import ActivationPanel from './components/ActivationPanel.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 
@@ -145,7 +144,6 @@ onMounted(async () => {
       @confirm="onCardConfirm" @back="onCardBack" />
     <GameView v-else-if="ui.view === 'game'" />
 
-    <FreedomControl v-if="ui.view !== 'home'" />
     <ActivationPanel />
 
     <!-- 设置按钮（右下角浮动，全局可用） -->

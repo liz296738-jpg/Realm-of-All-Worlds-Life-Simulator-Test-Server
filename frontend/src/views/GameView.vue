@@ -138,9 +138,7 @@ function onResume(payload) {
 
 <template>
   <div class="h-full flex flex-col">
-    <!-- 顶栏（右侧留出右上角常驻的自由度按钮位置） -->
-    <!-- pr-40：为右上角常驻的自由度按钮（约130px）预留空间 -->
-    <header class="flex items-center justify-between px-4 py-2 border-b border-stone-800 bg-stone-950/80 pr-40">
+    <header class="flex items-center justify-between px-4 py-2 border-b border-stone-800 bg-stone-950/80">
       <button @click="togglePanel('showSave', true)" class="text-sm text-stone-400 hover:text-amber-300">💾 存档/读档</button>
       <h1 class="text-sm text-stone-300 tracking-widest">{{ worldName(game.state) }}</h1>
       <span class="text-sm text-stone-500 w-20 text-right">
