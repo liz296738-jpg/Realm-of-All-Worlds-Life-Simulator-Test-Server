@@ -36,8 +36,9 @@ const filteredWorlds = computed(() => {
 const featuredWorld = computed(() => filteredWorlds.value[0] || null)
 const restWorlds = computed(() => filteredWorlds.value.slice(1))
 
-// ── 最近存档（继续上次冒险） ──
-const recentSave = computed(() => sessions.value[0] || null)
+// ── 快捷存档：取 sessions 首项作为首页快捷入口（后端目前无可靠更新时间字段，
+//    故不伪称“最近/上次”，仅作“继续冒险”快捷位） ──
+const quickSave = computed(() => sessions.value[0] || null)
 
 // ── 上传小说 → 建世界 ──
 const file = ref(null)
@@ -198,18 +199,18 @@ onMounted(async () => {
           </p>
         </section>
 
-        <!-- ── 继续上次冒险 ── -->
-        <section v-if="recentSave" class="mt-8">
+        <!-- ── 继续冒险（首页快捷存档入口） ── -->
+        <section v-if="quickSave" class="mt-8">
           <div class="flex items-center justify-between mb-3">
-            <h2 class="app-section-title">继续上次冒险</h2>
+            <h2 class="app-section-title">继续冒险</h2>
             <button type="button" class="text-xs app-muted hover:text-primary transition"
               @click="emit('continue')">全部存档 ›</button>
           </div>
-          <button type="button" class="home-recent-save" @click="continueSave(recentSave)">
+          <button type="button" class="home-recent-save" @click="continueSave(quickSave)">
             <div class="home-recent-save-main">
-              <p class="world-row-title">{{ recentSave.name }}</p>
+              <p class="world-row-title">{{ quickSave.name }}</p>
               <p class="text-xs app-muted mt-0.5 truncate">
-                {{ recentSave.world_name }} · {{ recentSave.place }} · 第{{ recentSave.turn }}回合 · {{ recentSave.date }}
+                {{ quickSave.world_name }} · {{ quickSave.place }} · 第{{ quickSave.turn }}回合 · {{ quickSave.date }}
               </p>
             </div>
             <span class="home-recent-save-arrow" aria-hidden="true">继续 ›</span>

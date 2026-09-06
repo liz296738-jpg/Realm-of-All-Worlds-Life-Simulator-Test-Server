@@ -503,7 +503,7 @@ textarea.app-input {
 }
 .home-segmented button {
   flex: 1;
-  min-height: 40px;
+  min-height: 44px;
   padding: 0 12px;
   border: none;
   border-radius: var(--radius-pill);
@@ -611,27 +611,24 @@ textarea.app-input {
 }
 
 /* ── 紧凑世界行（官方列表 / 我的世界通用） ──
-   整行 = 一个真 <button>（键盘原生支持 Enter/Space）；
-   删除按钮作为外层 .world-row-wrap 的兄弟节点，避免“按钮套按钮”的嵌套交互。 */
+   主体是一个真 <button>（无存档 → 进入，有存档 → 继续该存档），
+   “新开始 / 删除”等次级动作作为 .world-row-wrap 的兄弟节点，避免按钮套按钮。 */
 .world-row-wrap {
-  display: flex;
-  align-items: center;
   background: var(--surface-1);
   border-radius: var(--radius-md);
+  overflow: hidden;
   transition: background-color var(--duration-fast) var(--ease-standard);
 }
 .world-row-wrap:hover {
   background: var(--surface-2);
 }
 .world-row {
-  flex: 1;
-  min-width: 0;
   display: flex;
   align-items: center;
   gap: 14px;
+  width: 100%;
   padding: 14px;
   border: none;
-  border-radius: inherit;
   background: transparent;
   color: inherit;
   font-family: var(--font-ui);
@@ -675,18 +672,59 @@ textarea.app-input {
   font-size: 0.75em;
   color: var(--accent-muted);
 }
-.world-row-arrow {
+.world-row-trail {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+.world-row-arrow {
   color: var(--text-tertiary);
   font-size: 1.125rem;
   line-height: 1;
 }
+.world-row-continue-chip {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.8125em;
+  white-space: nowrap;
+}
+.world-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 14px 12px;
+}
+.world-row-act {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid var(--separator-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.8125em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+.world-row-act:hover,
+.world-row-act:active {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+}
 .world-row-delete {
-  flex: 0 0 auto;
-  align-self: center;
+  min-height: 36px;
   border: none;
   background: transparent;
-  padding: 8px 10px;
+  padding: 6px 10px;
   color: var(--text-tertiary);
   font-family: var(--font-ui);
   font-size: 0.75em;
@@ -726,7 +764,7 @@ textarea.app-input {
   background: var(--surface-2);
 }
 
-/* ── 最近存档（继续上次冒险） ── */
+/* ── 快捷存档（继续冒险） ── */
 .home-recent-save {
   display: flex;
   align-items: center;
@@ -794,8 +832,8 @@ textarea.app-input {
   display: flex;
   padding: 6px 8px calc(6px + var(--safe-bottom));
   background-color: rgba(9, 10, 13, 0.82); /* 兜底：不支持 color-mix 的老浏览器 */
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
   border-top: 1px solid var(--separator);
 }
 @supports (background-color: color-mix(in srgb, red 50%, transparent)) {

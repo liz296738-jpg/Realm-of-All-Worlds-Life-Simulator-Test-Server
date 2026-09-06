@@ -12,8 +12,9 @@ const emit = defineEmits(['enter', 'continue', 'remove'])
 
 const initial = computed(() => (props.world?.name || '界').charAt(0))
 
-// 整行是一个真 <button>：无存档 → 进入新游戏；有存档 → 继续该存档
-function open() {
+// 主行按钮：无存档 → 进入世界；有存档 → 继续该存档。
+// “新开始 / 删除”作为独立兄弟按钮，与主动作不互斥。
+function mainAction() {
   if (props.save) emit('continue', props.save)
   else emit('enter')
 }
@@ -21,8 +22,8 @@ function open() {
 
 <template>
   <div class="world-row-wrap">
-    <!-- 主行按钮：键盘 Enter/Space 由原生 button 处理 -->
-    <button type="button" class="world-row" @click="open">
+    <!-- 主行：整个内容区是一个真 <button>（键盘 Enter/Space 原生触发） -->
+    <button type="button" class="world-row" @click="mainAction">
       <span class="world-row-thumb world-cover" aria-hidden="true">
         <img v-if="cover" :src="cover" alt="" loading="lazy" />
         <span v-else class="world-cover-placeholder">
@@ -36,13 +37,19 @@ function open() {
         <span v-if="save" class="world-row-meta">第 {{ save.turn }} 回合 · {{ save.name }}</span>
       </span>
 
-      <span v-if="!mine" class="world-row-arrow" aria-hidden="true">›</span>
+      <span class="world-row-trail" aria-hidden="true">
+        <span v-if="save" class="world-row-continue-chip">继续 ›</span>
+        <span v-else class="world-row-arrow">›</span>
+      </span>
     </button>
 
-    <!-- 删除：外层兄弟按钮，避免按钮套按钮（Enter 不会误触进入世界） -->
-    <button v-if="mine" type="button" class="world-row-delete" :disabled="deleting"
-      aria-label="删除世界" @click="emit('remove', world)">
-      {{ deleting ? '删除中…' : '删除' }}
-    </button>
+    <!-- 次级动作：与主按钮同级，避免按钮套按钮；删除点击不会进入/继续 -->
+    <div v-if="save || mine" class="world-row-actions">
+      <button v-if="save" type="button" class="world-row-act" @click="emit('enter')">新开始</button>
+      <button v-if="mine" type="button" class="world-row-delete" :disabled="deleting"
+        aria-label="删除世界" @click="emit('remove', world)">
+        {{ deleting ? '删除中…' : '删除' }}
+      </button>
+    </div>
   </div>
 </template>
