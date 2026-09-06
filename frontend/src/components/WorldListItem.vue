@@ -23,7 +23,8 @@ function mainAction() {
 <template>
   <div class="world-row-wrap">
     <!-- 主行：整个内容区是一个真 <button>（键盘 Enter/Space 原生触发） -->
-    <button type="button" class="world-row" @click="mainAction">
+    <button type="button" class="world-row" @click="mainAction"
+      :aria-label="save ? `继续 ${world.name}` : `进入 ${world.name}`">
       <span class="world-row-thumb world-cover" aria-hidden="true">
         <img v-if="cover" :src="cover" alt="" loading="lazy" />
         <span v-else class="world-cover-placeholder">

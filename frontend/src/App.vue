@@ -154,12 +154,12 @@ onMounted(async () => {
     <CreationWizard v-else-if="ui.view === 'create'" @complete="onWizardComplete" />
     <CharacterCard v-else-if="ui.view === 'review'" :archive="archive" :world="worlds.selected"
       @confirm="onCardConfirm" @back="onCardBack" />
-    <GameView v-else-if="ui.view === 'game'" />
+    <GameView v-else-if="ui.view === 'game'" @open-settings="showSettings = true" />
 
     <ActivationPanel />
 
     <!-- 设置按钮（右上角浮动）：首页由底部导航接管，其余视图仍保留；顶部避开刘海安全区 -->
-    <button v-if="ui.view !== 'home'" type="button" @click="showSettings = !showSettings" title="设置" aria-label="设置"
+    <button v-if="ui.view !== 'home' && ui.view !== 'game'" type="button" @click="showSettings = !showSettings" title="设置" aria-label="设置"
       style="top: calc(0.75rem + var(--safe-top))"
       class="fixed right-3 z-30 px-3 py-1.5 rounded-full border border-stone-700 bg-stone-900/80 text-sm text-stone-300 backdrop-blur transition hover:border-primary hover:text-primary">
       ⚙ 设置

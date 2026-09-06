@@ -48,51 +48,51 @@ watch(() => [game.turns.length, game.error], async () => {
 </script>
 
 <template>
-  <div ref="scroller" class="flex-1 overflow-y-auto px-6 py-8 md:px-16">
-    <div class="max-w-3xl mx-auto">
+  <main ref="scroller" class="narrative-scroller" aria-label="故事正文">
+    <div class="narrative-column">
       <!-- 失败提示 -->
-      <div v-if="game.error" class="mb-4 text-sm text-red-300 border-l-2 border-red-700 pl-3">
-        ⚠️ {{ game.error }}
+      <div v-if="game.error" class="narrative-error">
+        {{ game.error }}
       </div>
 
       <!-- 过往回合：完整回放，文字不丢 -->
       <template v-for="(t, i) in game.turns" :key="i">
-        <div v-html="t.html" class="leading-relaxed text-stone-200 prose-narrative"></div>
-        <div v-if="t.choice" class="mt-3 text-sm text-amber-200/70 border-l-2 border-amber-700/50 pl-3">
-          ➤ {{ t.choice }}
+        <div v-html="t.html" class="prose-narrative narrative-copy"></div>
+        <div v-if="t.choice" class="narrative-choice">
+          你选择了 · {{ t.choice }}
         </div>
-        <div v-if="t.event" class="mt-4 text-sm text-amber-300/80 border-l-2 border-primary pl-3">
-          ⚔️ 事件：{{ t.event }}
+        <div v-if="t.event" class="narrative-annotation narrative-event">
+          <span>事件</span>{{ t.event }}
         </div>
-        <div v-if="t.notes && t.notes.length" class="mt-3 text-sm text-stone-400 border-l-2 border-stone-600 pl-3">
-          📖 笔记：{{ t.notes.join('；') }}
+        <div v-if="t.notes && t.notes.length" class="narrative-annotation">
+          <span>记录</span>{{ t.notes.join('；') }}
         </div>
       </template>
 
       <!-- 当前回合：同一位置持续渲染，生成 → 完成不重建 DOM -->
-      <div v-if="game.lastChoice" class="mt-3 text-sm text-amber-200/70 border-l-2 border-amber-700/50 pl-3">
-        ➤ {{ game.lastChoice }}
+      <div v-if="game.lastChoice" class="narrative-choice">
+        你选择了 · {{ game.lastChoice }}
       </div>
-      <div v-if="showStreaming" class="whitespace-pre-wrap leading-relaxed text-stone-200 prose-narrative">
+      <div v-if="showStreaming" class="whitespace-pre-wrap prose-narrative narrative-copy">
         <span>{{ display }}</span><span class="caret"></span>
       </div>
-      <div v-else-if="finalRendered" v-html="finalRendered" class="leading-relaxed text-stone-200 prose-narrative"></div>
-      <div v-else-if="game.turnDone && game.options.length" class="text-stone-500 text-sm italic py-4 text-center leading-relaxed">
+      <div v-else-if="finalRendered" v-html="finalRendered" class="prose-narrative narrative-copy"></div>
+      <div v-else-if="game.turnDone && game.options.length" class="narrative-empty">
         （AI 未生成有效的叙述文本。请选择一个选项继续，系统将在下一回合重新生成叙述。）
       </div>
-      <div v-else class="leading-relaxed text-stone-200 prose-narrative"></div>
-      <div v-if="!showStreaming && game.event" class="mt-4 text-sm text-amber-300/80 border-l-2 border-primary pl-3">
-        ⚔️ 事件：{{ game.event }}
+      <div v-else class="prose-narrative narrative-copy"></div>
+      <div v-if="!showStreaming && game.event" class="narrative-annotation narrative-event">
+        <span>事件</span>{{ game.event }}
       </div>
-      <div v-if="!showStreaming && game.notes.length" class="mt-3 text-sm text-stone-400 border-l-2 border-stone-600 pl-3">
-        📖 笔记：{{ game.notes.join('；') }}
+      <div v-if="!showStreaming && game.notes.length" class="narrative-annotation">
+        <span>记录</span>{{ game.notes.join('；') }}
       </div>
     </div>
-  </div>
+  </main>
 </template>
 
 <style>
-.prose-narrative p { margin: 0.9em 0; }
-.prose-narrative strong { color: #fcd34d; font-weight: 600; }
-.prose-narrative em { color: #d6d3d1; }
+.prose-narrative p { margin: 1.1em 0; }
+.prose-narrative strong { color: var(--text-primary); font-weight: 600; }
+.prose-narrative em { color: var(--text-secondary); }
 </style>

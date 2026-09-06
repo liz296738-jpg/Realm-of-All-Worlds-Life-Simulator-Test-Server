@@ -114,16 +114,10 @@ function close() {
 </script>
 
 <template>
-  <!-- 悬浮按钮 -->
-  <button @click="togglePanel('showCharacter', !ui.showCharacter)"
-    class="fixed top-[6.5rem] right-4 z-30 px-3 py-1.5 rounded-full bg-stone-800/90 border border-stone-700 text-sm text-stone-300 hover:bg-stone-700">
-    {{ ui.showCharacter ? '收起 ✕' : '👥 角色' }}
-  </button>
-
   <!-- 角色情报抽屉 -->
   <transition name="slide">
     <aside v-if="ui.showCharacter"
-      class="fixed top-[8.5rem] right-4 z-20 w-80 max-h-[70vh] overflow-y-auto rounded-lg border border-stone-700 bg-stone-900/95 p-4 shadow-2xl">
+      class="game-side-panel fixed z-20 overflow-y-auto p-4">
 
       <!-- Header -->
       <div class="flex justify-between items-center mb-3">

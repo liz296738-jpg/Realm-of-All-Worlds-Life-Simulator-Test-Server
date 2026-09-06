@@ -40,24 +40,21 @@ const characterFields = computed(() => {
 </script>
 
 <template>
-  <!-- 折叠按钮 -->
-  <button @click="togglePanel('showStatus', !ui.showStatus)"
-    class="fixed top-14 right-4 z-30 px-3 py-1.5 rounded-full bg-stone-800/90 border border-stone-700 text-sm text-stone-300 hover:bg-stone-700">
-    {{ ui.showStatus ? '收起 ✕' : '☰ 状态' }}
-  </button>
-
   <!-- 状态栏抽屉 -->
   <transition name="slide">
     <aside v-if="ui.showStatus && st"
-      class="fixed top-24 right-4 z-20 w-80 max-h-[80vh] overflow-y-auto rounded-lg border border-stone-700 bg-stone-900/95 p-4 shadow-2xl">
+      class="game-side-panel fixed z-20 overflow-y-auto p-4">
 
       <!-- ── 标题：世界名 + 等级 ── -->
-      <h3 class="text-amber-200 font-semibold mb-3">
-        {{ worldName(st) }}
-        <span v-if="levelValue != null" class="text-amber-300 font-medium ml-1">
+      <div class="flex items-center justify-between gap-3 mb-3">
+        <h3 class="text-amber-200 font-semibold">
+          {{ worldName(st) }}
+          <span v-if="levelValue != null" class="text-amber-300 font-medium ml-1">
           · {{ levelField }} {{ levelValue }}
-        </span>
-      </h3>
+          </span>
+        </h3>
+        <button type="button" @click="togglePanel('showStatus', false)" class="app-icon-button" aria-label="关闭状态面板">×</button>
+      </div>
 
       <!-- ── 角色字段（动态遍历） ── -->
       <dl v-if="characterFields.length" class="text-xs space-y-1.5">
