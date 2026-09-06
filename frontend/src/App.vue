@@ -11,6 +11,7 @@ import {
   refreshEntitlement, isGateError, selectWorld, loadWorlds,
 } from './store'
 import { postSse, api } from './api'
+import { renderMd, stripOptionsBlock } from './md'
 import HomeView from './views/HomeView.vue'
 import GameView from './views/GameView.vue'
 import CreationWizard from './components/CreationWizard.vue'
@@ -107,14 +108,25 @@ async function resumeGame(sessionId) {
     }
     const d = await resp.json()
     setGameState(d.state)
-    setTurns((d.turns || []).map(t => ({
+    // 与 GameView.onResume(SavePanel 读档路径) 保持一致：后端 turns 末尾是“当前回合”，
+    // 前段才是已归档回合。恢复当前回合叙述 + 选项，避免首页“继续冒险”读档后无选项可点。
+    const bt = d.turns || []
+    const cur = bt[bt.length - 1] || null
+    setTurns(bt.slice(0, -1).map(t => ({
       narrative: t.narrative || '',
       options: t.options || [],
       notes: t.notes || [],
       event: t.event || '',
       choice: t.choice || null,
-      html: (t.narrative || '').replace(/<[^>]+>/g, ''),
+      html: renderMd(stripOptionsBlock(t.narrative || '')),
     })))
+    if (cur && cur.narrative) appendNarrative(cur.narrative)
+    setLastChoice(cur ? (cur.choice || null) : null)
+    setOptions(d.last_options || [])
+    setNotes(cur ? (cur.notes || []) : [])
+    setEvent(cur ? (cur.event || '') : '')
+    setCanUndo(!!d.can_undo)
+    setError('')
     setTurnDone(true)
     setTurnCommitted(true)
     setStreaming(false)
@@ -136,7 +148,7 @@ onMounted(async () => {
 
 <template>
   <div class="h-full">
-    <HomeView v-if="ui.view === 'home'" @new-game="newGame" @continue="onContinue" />
+    <HomeView v-if="ui.view === 'home'" @new-game="newGame" @continue="onContinue" @open-settings="showSettings = true" />
     <GenericWizard v-else-if="ui.view === 'create' && worlds.selected && worlds.selected.id !== 'douluo'"
       :world="worlds.selected" @complete="onWizardComplete" />
     <CreationWizard v-else-if="ui.view === 'create'" @complete="onWizardComplete" />
@@ -146,9 +158,10 @@ onMounted(async () => {
 
     <ActivationPanel />
 
-    <!-- 设置按钮（右上角浮动，全局可用） -->
-    <button type="button" @click="showSettings = !showSettings" title="设置" aria-label="设置"
-      class="fixed top-3 right-3 z-30 px-3 py-1.5 rounded-full border border-stone-700 bg-stone-900/80 text-sm text-stone-300 backdrop-blur transition hover:border-primary hover:text-primary">
+    <!-- 设置按钮（右上角浮动）：首页由底部导航接管，其余视图仍保留；顶部避开刘海安全区 -->
+    <button v-if="ui.view !== 'home'" type="button" @click="showSettings = !showSettings" title="设置" aria-label="设置"
+      style="top: calc(0.75rem + var(--safe-top))"
+      class="fixed right-3 z-30 px-3 py-1.5 rounded-full border border-stone-700 bg-stone-900/80 text-sm text-stone-300 backdrop-blur transition hover:border-primary hover:text-primary">
       ⚙ 设置
     </button>
     <SettingsPanel v-if="showSettings" @close="showSettings = false" />

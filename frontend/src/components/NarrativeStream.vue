@@ -73,7 +73,7 @@ watch(() => [game.turns.length, game.error], async () => {
       <div v-if="game.lastChoice" class="mt-3 text-sm text-amber-200/70 border-l-2 border-amber-700/50 pl-3">
         ➤ {{ game.lastChoice }}
       </div>
-      <div v-if="showStreaming" class="whitespace-pre-wrap leading-relaxed text-stone-200">
+      <div v-if="showStreaming" class="whitespace-pre-wrap leading-relaxed text-stone-200 prose-narrative">
         <span>{{ display }}</span><span class="caret"></span>
       </div>
       <div v-else-if="finalRendered" v-html="finalRendered" class="leading-relaxed text-stone-200 prose-narrative"></div>

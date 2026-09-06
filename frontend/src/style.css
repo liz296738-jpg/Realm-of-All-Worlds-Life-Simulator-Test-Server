@@ -92,7 +92,8 @@ body,
 
 body {
   font-family: var(--font-ui);
-  background-color: var(--theme-bg);
+  /* 纯色兜底：不依赖 color-mix() 也能有底色，绝不因新颜色函数支持缺失而变透明 */
+  background-color: var(--color-bg);
   background-image: var(--theme-bg-image, none);
   background-size: cover;
   background-position: center;
@@ -106,6 +107,14 @@ body {
     font-size var(--duration-normal) var(--ease-standard),
     color var(--duration-normal) var(--ease-standard),
     background-color var(--duration-normal) var(--ease-standard);
+}
+
+/* 现代浏览器：主题色低比例混入近黑，得到同色相暗背景（--theme-bg 由 store.js 注入 color-mix 值）。
+   用 @supports 隔离，保证不支持 color-mix() 的浏览器走上方纯色 --color-bg，而不是退化成透明。 */
+@supports (background-color: color-mix(in srgb, red 50%, blue)) {
+  body {
+    background-color: var(--theme-bg);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -453,4 +462,371 @@ textarea.app-input {
     --safe-left: 0px;
     --safe-right: 0px;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   14. Home / World Discovery
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 品牌 Hero：直接落在页面背景上，不用卡片，靠留白建立呼吸感 ── */
+.home-hero {
+  padding-top: calc(44px + var(--safe-top));
+  padding-bottom: 28px;
+  text-align: center;
+}
+.home-hero-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+.home-hero-title .home-hero-dot {
+  color: var(--accent);
+}
+.home-hero-subtitle {
+  margin-top: 12px;
+  font-size: 0.9375em;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* ── 分段控件：创作者世界 / 我的世界 ── */
+.home-segmented {
+  display: flex;
+  gap: 4px;
+  max-width: 340px;
+  margin: 0 auto 24px;
+  padding: 4px;
+  background: var(--surface-1);
+  border-radius: var(--radius-pill);
+}
+.home-segmented button {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.9375em;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+.home-segmented button[aria-pressed='true'] {
+  background: var(--surface-3);
+  color: var(--text-primary);
+}
+.home-segmented button:active {
+  transform: scale(0.98);
+}
+
+/* ── 世界封面：占位图用主题色氛围光 + 世界名首字，无真实图片 ── */
+.world-cover {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+}
+.world-cover--featured {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.world-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.world-cover-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--theme-color) 16%, transparent), transparent 70%),
+    linear-gradient(160deg, var(--surface-2), var(--color-bg));
+}
+.world-cover-initial {
+  font-family: var(--font-reading);
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-secondary);
+}
+.world-cover-name {
+  font-size: 0.6875em;
+  letter-spacing: 0.35em;
+  color: var(--text-tertiary);
+}
+
+/* ── Featured World：列表首个官方世界的大卡片 ── */
+.world-featured {
+  background: var(--surface-1);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.world-featured-body {
+  padding: 18px;
+}
+.world-featured-title {
+  margin-top: 12px;
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+.world-featured-desc {
+  margin-top: 8px;
+  font-size: 0.9375em;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.world-featured-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.world-featured-actions .app-button {
+  flex: 1;
+}
+.world-featured-save-meta {
+  margin-top: 12px;
+  font-size: 0.8125em;
+  color: var(--text-tertiary);
+}
+
+/* ── 紧凑世界行（官方列表 / 我的世界通用） ──
+   整行 = 一个真 <button>（键盘原生支持 Enter/Space）；
+   删除按钮作为外层 .world-row-wrap 的兄弟节点，避免“按钮套按钮”的嵌套交互。 */
+.world-row-wrap {
+  display: flex;
+  align-items: center;
+  background: var(--surface-1);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+.world-row-wrap:hover {
+  background: var(--surface-2);
+}
+.world-row {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: none;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.world-row-thumb {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: var(--radius-sm);
+}
+.world-row-thumb .world-cover-initial {
+  font-size: 1.5rem;
+}
+.world-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.world-row-title {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+.world-row-desc {
+  margin-top: 3px;
+  font-size: 0.8125em;
+  line-height: 1.5;
+  color: var(--text-tertiary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.world-row-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.75em;
+  color: var(--accent-muted);
+}
+.world-row-arrow {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font-size: 1.125rem;
+  line-height: 1;
+}
+.world-row-delete {
+  flex: 0 0 auto;
+  align-self: center;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.75em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+.world-row-delete:hover,
+.world-row-delete:active {
+  color: var(--danger);
+}
+.world-row-delete:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── 建世界入口（虚线卡片，弱化但仍可辨识） ── */
+.home-builder-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border: 1px dashed var(--separator-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.9375em;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+.home-builder-cta:hover,
+.home-builder-cta:active {
+  background: var(--surface-2);
+}
+
+/* ── 最近存档（继续上次冒险） ── */
+.home-recent-save {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+.home-recent-save:hover,
+.home-recent-save:active {
+  background: var(--surface-2);
+}
+.home-recent-save-main {
+  flex: 1;
+  min-width: 0;
+}
+.home-recent-save-arrow {
+  color: var(--text-tertiary);
+}
+
+/* ── 通用空态 / 加载态 ── */
+.home-empty {
+  padding: 28px 0;
+  text-align: center;
+  font-size: 0.875em;
+  color: var(--text-tertiary);
+}
+.home-empty .home-retry {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border: 1px solid var(--separator-strong);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.8125em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+.home-empty .home-retry:hover,
+.home-empty .home-retry:active {
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
+/* ── 移动端底部导航 ── */
+.home-bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: flex;
+  padding: 6px 8px calc(6px + var(--safe-bottom));
+  background-color: rgba(9, 10, 13, 0.82); /* 兜底：不支持 color-mix 的老浏览器 */
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--separator);
+}
+@supports (background-color: color-mix(in srgb, red 50%, transparent)) {
+  .home-bottom-nav {
+    background-color: color-mix(in srgb, var(--color-bg) 82%, transparent);
+  }
+}
+.home-bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 48px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.6875em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+.home-bottom-nav-item svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+}
+.home-bottom-nav-item[aria-current='page'] {
+  color: var(--accent);
+}
+.home-bottom-nav-item:active {
+  transform: scale(0.96);
 }
