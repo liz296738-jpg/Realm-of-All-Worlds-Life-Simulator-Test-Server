@@ -2,35 +2,455 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 主题变量安全后备：JS 未加载或注入前，保证样式可读 */
+/* ═══════════════════════════════════════════════════════════════════
+   1. Design Tokens
+   ───────────────────────────────────────────────────────────────────
+   全站视觉地基：颜色 / 表面 / 文字 / 分隔线 / 圆角 / 阴影 / 动效 / 安全区
+   后续页面统一从这里取值，不要再各自现场挑 stone-900 / amber-300 等裸色。
+   ═══════════════════════════════════════════════════════════════════ */
 :root {
+  /* ── 页面底色：接近黑但非纯黑，避免暖褐 ── */
+  --color-bg: #090a0d;
+
+  /* ── 主题（store.js 动态注入；此处为 JS 加载前的兜底） ── */
   --theme-color: #d97706;
+  --theme-bg: #090a0d;
+  --theme-bg-image: none;
   --base-font-size: 16px;
-  --theme-bg: #0c0a09;
+
+  /* ── Surface 层级：靠细微明暗差异建立纵深，不靠粗边框 ──
+     1 = 普通轻量区域 · 2 = 较高层级 · 3 = 浮层 / modal / sheet */
+  --surface-1: rgba(255, 255, 255, 0.035);
+  --surface-2: rgba(255, 255, 255, 0.055);
+  --surface-3: rgba(255, 255, 255, 0.085);
+
+  /* ── 文字层级（不要所有文字都高亮，也不用大量纯白） ── */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.62);
+  --text-tertiary: rgba(255, 255, 255, 0.40);
+  --text-disabled: rgba(255, 255, 255, 0.27);
+
+  /* ── 分隔线：极弱，主要靠留白 + 明暗分层 ── */
+  --separator: rgba(255, 255, 255, 0.07);
+  --separator-strong: rgba(255, 255, 255, 0.12);
+
+  /* ── Accent（从主题色推导；Accent 是稀缺资源，不要到处用） ── */
+  --accent: var(--theme-color);
+  --accent-soft: color-mix(in srgb, var(--theme-color) 14%, transparent);
+  --accent-muted: color-mix(in srgb, var(--theme-color) 45%, var(--color-bg));
+  --accent-border: color-mix(in srgb, var(--theme-color) 32%, transparent);
+
+  /* ── 状态色（只在真正语义命中时使用，勿铺满红黄橙绿） ── */
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #60a5fa;
+  --success-soft: color-mix(in srgb, var(--success) 14%, transparent);
+  --warning-soft: color-mix(in srgb, var(--warning) 14%, transparent);
+  --danger-soft: color-mix(in srgb, var(--danger) 14%, transparent);
+  --info-soft: color-mix(in srgb, var(--info) 14%, transparent);
+
+  /* ── 字体：UI 用系统无衬线，正文用衬线（第三阶段正式应用） ── */
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --font-reading: "Songti SC", "STSong", "Noto Serif SC", Georgia, serif;
+
+  /* ── 圆角 ── */
+  --radius-xs: 8px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 22px;
+  --radius-pill: 999px;
+
+  /* ── 阴影：黑色半透明，克制，不做金色外发光 ── */
+  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.40), 0 4px 16px rgba(0, 0, 0, 0.25);
+  --shadow-floating: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.55);
+
+  /* ── 动效 ── */
+  --duration-fast: 150ms;
+  --duration-normal: 220ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ── 移动端安全区（刘海 / 底部手势条） ── */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
-html, body, #app { height: 100%; }
+/* ═══════════════════════════════════════════════════════════════════
+   2. Base / Reset
+   ═══════════════════════════════════════════════════════════════════ */
+html,
+body,
+#app {
+  height: 100%;
+}
+
 body {
-  font-family: 'Georgia', 'Songti SC', 'SimSun', serif;
-  background-color: #0c0a09;          /* 兜底：浏览器不支持 color-mix 时 */
-  background-color: var(--theme-bg);  /* 跟随主题色的暗背景 */
-  background-image: var(--theme-bg-image, none);  /* 自定义背景图（含暗色遮罩），无则纯色 */
+  font-family: var(--font-ui);
+  background-color: var(--theme-bg);
+  background-image: var(--theme-bg-image, none);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   font-size: var(--base-font-size);
-  transition: font-size 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  transition:
+    font-size var(--duration-normal) var(--ease-standard),
+    color var(--duration-normal) var(--ease-standard),
+    background-color var(--duration-normal) var(--ease-standard);
 }
 
-/* 细滚动条 */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-thumb { background: #44403c; border-radius: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
+/* ═══════════════════════════════════════════════════════════════════
+   3. Typography
+   ═══════════════════════════════════════════════════════════════════ */
+/* 阅读正文字体（衬线）：body 已切为无衬线 UI 字体，正文需保留衬线阅读体验。
+   .font-reading / .narrative-text / .app-reading 供后续组件复用；
+   .prose-narrative 直接兜住 NarrativeStream 既有正文，避免因 body 切字体而静默退化为无衬线。 */
+.font-reading,
+.narrative-text,
+.app-reading,
+.prose-narrative {
+  font-family: var(--font-reading);
+}
 
+/* ═══════════════════════════════════════════════════════════════════
+   4. Background
+   ═══════════════════════════════════════════════════════════════════ */
+/* 无自定义背景图时的极微弱氛围光：顶部中央主题色径向光，向下淡出至深黑。
+   仅一段纯 CSS 渐变——无 blur、无动画、无视频，几乎零 GPU 开销。 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* --ambient-glow 由 store.js 控制：无自定义背景图时为主题色氛围光，有图时置 none */
+  background: var(
+    --ambient-glow,
+    radial-gradient(
+      120% 60% at 50% 0%,
+      color-mix(in srgb, var(--theme-color) 10%, transparent) 0%,
+      transparent 62%
+    )
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   5. Surface
+   ═══════════════════════════════════════════════════════════════════ */
+.app-surface {
+  background: var(--surface-1);
+}
+
+.app-surface-elevated {
+  background: var(--surface-2);
+}
+
+.app-panel {
+  background: var(--surface-2);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-md);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   6. Buttons
+   ═══════════════════════════════════════════════════════════════════ */
+.app-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 0.9375em;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.app-button:active {
+  transform: scale(0.98);
+}
+
+.app-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 主 CTA：进入世界 / 确认 / 继续 */
+.app-button-primary {
+  background: var(--accent);
+  color: var(--color-bg);
+}
+
+.app-button-primary:hover {
+  filter: brightness(1.08);
+}
+
+/* 次级操作：surface + 极弱分隔线，不抢主按钮 */
+.app-button-secondary {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--separator);
+}
+
+.app-button-secondary:hover {
+  background: var(--surface-3);
+}
+
+/* 弱操作 / 返回 / 工具按钮：默认无背景，hover/active 才出现轻 surface */
+.app-button-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.app-button-ghost:hover {
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+.app-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.app-icon-button:hover {
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   7. Inputs
+   ═══════════════════════════════════════════════════════════════════ */
+.app-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  background: var(--surface-1);
+  border: 1px solid var(--separator);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.9375em;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.app-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.app-input:focus {
+  outline: none;
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+textarea.app-input {
+  min-height: 88px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   8. Chips
+   ═══════════════════════════════════════════════════════════════════ */
+.app-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-1);
+  border: 1px solid var(--separator);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.75em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   9. Panels / Sheets
+   ═══════════════════════════════════════════════════════════════════ */
+/* 浮层 / modal / sheet：深色 elevated surface + 大圆角 + 适度阴影 */
+.app-sheet {
+  background: var(--surface-3);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-modal);
+}
+
+/* 模态背景遮罩：统一颜色与轻微模糊（仅用于 modal / sheet 顶层） */
+.app-overlay {
+  background: rgba(9, 10, 13, 0.6);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.app-divider {
+  height: 1px;
+  border: none;
+  background: var(--separator);
+}
+
+.app-section-title {
+  font-family: var(--font-ui);
+  font-size: 0.8125em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-tertiary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   10. Utilities
+   ═══════════════════════════════════════════════════════════════════ */
+.app-muted {
+  color: var(--text-tertiary);
+}
+
+.app-safe-top {
+  padding-top: var(--safe-top);
+}
+
+.app-safe-bottom {
+  padding-bottom: var(--safe-bottom);
+}
+
+.app-safe-left {
+  padding-left: var(--safe-left);
+}
+
+.app-safe-right {
+  padding-right: var(--safe-right);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   11. Motion
+   ═══════════════════════════════════════════════════════════════════ */
 /* 打字光标闪烁 */
-@keyframes caret-blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes caret-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 .caret::after {
   content: '▍';
-  color: #d6d3d1;
+  color: var(--text-secondary);
   animation: caret-blink 1s step-end infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   12. Accessibility
+   ═══════════════════════════════════════════════════════════════════ */
+/* 键盘焦点：清楚、细、用主题色，不刺眼 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 文本选中：accent soft，高级感细节，不要太亮 */
+::selection {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+/* 细滚动条：非常弱，不抢视觉；Firefox 走 scrollbar-color */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--separator-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--separator-strong);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-disabled);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 用户开启「减少动态效果」时：关闭/缩短一切动画（!important 是标准写法，用于覆盖任意动画） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .caret::after {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   13. Responsive / Safe Area
+   ═══════════════════════════════════════════════════════════════════ */
+/* 安全区变量已在上方 :root 定义；此处提供针对非 notch 环境的稳妥兜底，
+   后续首页底部导航与游戏页底部操作栏统一消费 --safe-bottom。 */
+@supports not (padding: env(safe-area-inset-bottom)) {
+  :root {
+    --safe-top: 0px;
+    --safe-bottom: 0px;
+    --safe-left: 0px;
+    --safe-right: 0px;
+  }
 }

@@ -207,11 +207,16 @@ export function setActivationOpen(isOpen, msg) {
 //  Actions — ui：主题样式（主题色 / 背景图 / 基础字号）
 // ═══════════════════════════════════════════════════════════════
 
-/** 由 base64 背景图拼出「暗色遮罩 + 图」的 CSS 背景层；无图返回 none。 */
+/** 由 base64 背景图拼出「暗色遮罩 + 边缘 vignette + 图」的 CSS 背景层；无图返回 none。
+ *  全部为纯 CSS 渐变（linear / radial），不 blur 整个 body，避免移动端 GPU 压力。 */
 function _bgImageStack(dataUrl) {
   if (!dataUrl) return 'none'
-  // 近黑半透明遮罩盖在图上，保证浅色文字始终可读
-  return `linear-gradient(rgba(12, 10, 9, 0.55), rgba(12, 10, 9, 0.72)), url("${dataUrl}")`
+  // 近黑半透明遮罩盖在图上保证文字可读 + 四周轻微压暗强化沉浸感
+  return [
+    'linear-gradient(rgba(9, 10, 13, 0.52), rgba(9, 10, 13, 0.78))',
+    'radial-gradient(ellipse at center, rgba(9, 10, 13, 0) 55%, rgba(9, 10, 13, 0.38) 100%)',
+    `url("${dataUrl}")`,
+  ].join(', ')
 }
 
 /** 将主题色、背景图与字号注入 DOM 根节点的 CSS 变量
@@ -220,8 +225,14 @@ function _applyThemeSettings() {
   document.documentElement.style.setProperty('--theme-color', _ui.themeColor)
   document.documentElement.style.setProperty('--base-font-size', _ui.baseFontSize + 'px')
   // 背景跟随主题：把主题色低比例混入近黑底色，得到同色相的暗背景（15% 保证可见、又足够暗以保可读性）
-  document.documentElement.style.setProperty('--theme-bg', `color-mix(in srgb, ${_ui.themeColor} 15%, #0c0a09)`)
+  document.documentElement.style.setProperty('--theme-bg', `color-mix(in srgb, ${_ui.themeColor} 15%, #090a0d)`)
   document.documentElement.style.setProperty('--theme-bg-image', _bgImageStack(_ui.bgImage))
+  // 氛围光只在无自定义背景图时显示（有图时 _bgImageStack 自带暗色遮罩 + vignette，无需再叠主题光）
+  if (_ui.bgImage) {
+    document.documentElement.style.setProperty('--ambient-glow', 'none')
+  } else {
+    document.documentElement.style.removeProperty('--ambient-glow')
+  }
 }
 
 /** 更新主题样式：改响应式状态 → 持久化到 localStorage → 注入 CSS 变量。 */
