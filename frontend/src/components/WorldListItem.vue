@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   world: { type: Object, required: true },
@@ -18,6 +18,8 @@ function mainAction() {
   if (props.save) emit('continue', props.save)
   else emit('enter')
 }
+const coverFailed = ref(false)
+watch(() => props.cover, () => { coverFailed.value = false })
 </script>
 
 <template>
@@ -26,7 +28,8 @@ function mainAction() {
     <button type="button" class="world-row" @click="mainAction"
       :aria-label="save ? `继续 ${world.name}` : `进入 ${world.name}`">
       <span class="world-row-thumb world-cover" aria-hidden="true">
-        <img v-if="cover" :src="cover" alt="" loading="lazy" />
+        <img v-if="cover && !coverFailed" :src="cover" alt="" loading="lazy" decoding="async"
+          @error="coverFailed = true" />
         <span v-else class="world-cover-placeholder">
           <span class="world-cover-initial">{{ initial }}</span>
         </span>

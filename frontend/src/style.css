@@ -536,7 +536,7 @@ textarea.app-input {
   background: var(--surface-1);
 }
 .world-cover--featured {
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .world-cover img {

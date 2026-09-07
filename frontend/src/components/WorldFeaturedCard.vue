@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
   world: { type: Object, required: true },
@@ -9,12 +9,15 @@ const props = defineProps({
 const emit = defineEmits(['enter', 'continue'])
 
 const initial = computed(() => (props.world?.name || '界').charAt(0))
+const coverFailed = ref(false)
+watch(() => props.cover, () => { coverFailed.value = false })
 </script>
 
 <template>
   <article class="world-featured">
     <div class="world-cover world-cover--featured">
-      <img v-if="cover" :src="cover" :alt="world.name" loading="eager" />
+      <img v-if="cover && !coverFailed" :src="cover" :alt="world.name" loading="eager"
+        fetchpriority="high" @error="coverFailed = true" />
       <div v-else class="world-cover-placeholder" aria-hidden="true">
         <span class="world-cover-initial">{{ initial }}</span>
         <span class="world-cover-name">{{ world.name }}</span>

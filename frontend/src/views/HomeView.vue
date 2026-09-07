@@ -13,7 +13,16 @@ const sessions = ref([])
 
 // ── 世界封面映射（预留）：未来填入真实图片路径，无需改组件结构 ──
 const WORLD_COVERS = {
-  // 例：douluo: '/assets/worlds/douluo.webp'
+  douluo: '/world-covers/douluo.webp',
+  gebi: '/world-covers/gebi.webp',
+  shanhe: '/world-covers/shanhe.webp',
+  shengluolan: '/world-covers/shengluolan.webp',
+  shuguang: '/world-covers/shuguang.webp',
+  taishangfuli: '/world-covers/taishangfuli.webp',
+  wanwusheng: '/world-covers/wanwusheng.webp',
+  yongzhou: '/world-covers/yongzhou.webp',
+  zhenshi: '/world-covers/zhenshi.webp',
+  zhujie: '/world-covers/zhujie.webp',
 }
 function worldCover(w) {
   return (w && WORLD_COVERS[w.id]) || null
