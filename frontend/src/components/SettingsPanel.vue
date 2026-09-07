@@ -173,7 +173,7 @@ function openActivation() {
       <!-- 主题分组（可折叠） -->
       <section class="app-settings-section">
         <button type="button" @click="themeOpen = !themeOpen"
-          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
+          class="app-settings-trigger">
           <span class="font-medium">主题</span>
           <span class="text-xs text-stone-500">{{ themeOpen ? '▾' : '▸' }}</span>
         </button>
@@ -183,7 +183,7 @@ function openActivation() {
             <label for="theme-color" class="mb-2 block text-sm text-stone-300">主题色</label>
             <div class="flex items-center gap-3">
               <input id="theme-color" type="color" :value="ui.themeColor" @input="onColorInput"
-                class="h-10 w-16 cursor-pointer rounded border border-stone-700 bg-stone-800 p-1" />
+              class="app-settings-color" />
               <span class="font-mono text-xs text-stone-400">{{ ui.themeColor }}</span>
             </div>
           </div>
@@ -193,12 +193,11 @@ function openActivation() {
             <label class="mb-2 block text-sm text-stone-300">背景图</label>
             <div class="flex items-center gap-3">
               <button type="button" :disabled="bgBusy" @click="fileInput.click()"
-                class="px-3 py-1.5 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary disabled:opacity-50">
+                class="app-button app-button-secondary disabled:opacity-50">
                 {{ bgBusy ? '处理中…' : (ui.bgImage ? '更换图片' : '上传图片') }}
               </button>
               <button v-if="ui.bgImage" type="button" @click="clearBgImage"
-                class="px-3 py-1.5 rounded border border-stone-700 text-sm text-stone-400 transition hover:border-red-500/50 hover:text-red-400">
-                清除
+                class="app-button app-button-ghost app-danger-action">移除背景
               </button>
               <input ref="fileInput" type="file" accept="image/*" class="hidden" @change="onFileChange" />
             </div>
@@ -229,7 +228,7 @@ function openActivation() {
       <!-- 文字数量分组（可折叠） -->
       <section class="app-settings-section">
         <button type="button" @click="freedomOpen = !freedomOpen"
-          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
+          class="app-settings-trigger">
           <span class="font-medium">文字数量</span>
           <span class="text-xs text-stone-500">{{ freedomOpen ? '▾' : '▸' }}</span>
         </button>
@@ -238,8 +237,8 @@ function openActivation() {
             <button v-for="t in FREEDOM_TIERS" :key="t.value" type="button" @click="setFreedom(t.value)"
               class="w-full flex items-center justify-between gap-2 px-3 py-2 rounded text-sm transition"
               :class="draft.freedom === t.value
-                ? 'border border-primary bg-amber-900/50 text-amber-100'
-                : 'border border-stone-700 text-stone-300 hover:bg-stone-800'">
+                ? 'app-settings-option app-settings-option-selected'
+                : 'app-settings-option'">
               <span class="font-medium">{{ t.label }} <span class="text-xs text-stone-500">· {{ t.chars }}字</span></span>
               <span class="text-xs text-stone-500 text-right shrink-0">{{ t.note }}</span>
             </button>
@@ -253,30 +252,29 @@ function openActivation() {
       <!-- 数据管理分组（可折叠） -->
       <section class="app-settings-section">
         <button type="button" @click="dataOpen = !dataOpen"
-          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
+          class="app-settings-trigger">
           <span class="font-medium">数据管理</span>
           <span class="text-xs text-stone-500">{{ dataOpen ? '▾' : '▸' }}</span>
         </button>
         <div v-if="dataOpen" class="mt-3 px-2">
           <div class="space-y-2">
             <button type="button" @click="exportData" :disabled="exporting"
-              class="w-full px-3 py-2 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary disabled:opacity-50">
-              {{ exporting ? '⏳ 导出中…' : '📥 导出数据' }}
+              class="app-button app-button-secondary w-full disabled:opacity-50">
+              {{ exporting ? '导出中…' : '导出数据' }}
             </button>
-            <label class="block w-full px-3 py-2 rounded border border-stone-700 text-sm text-stone-300 text-center transition hover:border-primary hover:text-primary cursor-pointer">
-              📤 导入数据
+            <label class="app-button app-button-secondary w-full cursor-pointer">
+              导入数据
               <input type="file" accept=".json" @change="importData" class="hidden" />
             </label>
             <button type="button" @click="refreshPage"
-              class="w-full px-3 py-2 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary">
-              🔄 刷新页面
+              class="app-button app-button-secondary w-full">刷新页面
             </button>
           </div>
           <p v-if="dataMsg" :class="[
             'mt-2 px-3 py-2 rounded border text-[11px] leading-relaxed',
             dataMsgType === 'err'
-              ? 'bg-red-900/40 border-red-800 text-red-200'
-              : 'bg-emerald-900/40 border-emerald-800 text-emerald-100'
+              ? 'app-inline-message-danger'
+              : 'app-inline-message-success'
           ]">{{ dataMsg }}</p>
           <p class="mt-2 text-[11px] leading-relaxed text-stone-500">
             导出为 JSON 备份文件；浏览器清缓存或换设备后，可通过导入恢复世界与存档。
@@ -287,14 +285,13 @@ function openActivation() {
       <!-- 订阅分组（可折叠） -->
       <section class="app-settings-section">
         <button type="button" @click="subOpen = !subOpen"
-          class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
+          class="app-settings-trigger">
           <span class="font-medium">订阅</span>
           <span class="text-xs text-stone-500">{{ subOpen ? '▾' : '▸' }}</span>
         </button>
         <div v-if="subOpen" class="mt-3 px-2">
           <button type="button" @click="openActivation"
-            class="w-full px-3 py-2 rounded border border-stone-700 text-sm text-stone-300 transition hover:border-primary hover:text-primary">
-            💳 订阅 / 激活码
+            class="app-button app-button-secondary w-full">订阅 / 激活码
           </button>
           <p class="mt-2 text-[11px] leading-relaxed text-stone-500">{{ statusText }}</p>
         </div>

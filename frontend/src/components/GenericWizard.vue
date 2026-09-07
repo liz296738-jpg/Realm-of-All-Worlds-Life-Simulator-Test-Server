@@ -54,7 +54,7 @@ function buildArchive() {
       <div class="flex flex-wrap gap-1 text-xs">
         <span v-for="(st, i) in steps" :key="st.step"
           class="px-2 py-1 rounded-full"
-          :class="i + 1 === step ? 'bg-primary text-stone-950' : i + 1 < step ? 'bg-stone-700 text-stone-300' : 'bg-stone-800 text-stone-500'">
+          :class="i + 1 === step ? 'app-step-current' : i + 1 < step ? 'app-step-complete' : 'app-step'">
           {{ st.step }}
         </span>
       </div>
@@ -69,7 +69,7 @@ function buildArchive() {
         </label>
         <!-- select -->
         <select v-if="f.type === 'select'" v-model="form[f.key]"
-          class="w-full bg-stone-900 border border-stone-700 rounded p-2 text-stone-200">
+          class="app-input">
           <option v-for="opt in (f.options || [])" :key="typeof opt === 'object' ? opt.value : opt" :value="typeof opt === 'object' ? opt.value : opt">
             {{ typeof opt === 'object' ? (opt.label || opt.value) : opt }}
           </option>
@@ -77,7 +77,7 @@ function buildArchive() {
         <!-- textarea -->
         <textarea v-else-if="f.type === 'textarea'" v-model="form[f.key]" :rows="f.rows || 3"
           :placeholder="f.placeholder || ''"
-          class="w-full bg-stone-900 border border-stone-700 rounded p-2 text-stone-200"></textarea>
+          class="app-input"></textarea>
         <!-- number -->
         <input v-else-if="f.type === 'number'" v-model="form[f.key]" type="number"
           :min="f.min" :max="f.max" :step="f.step || 1" :placeholder="f.placeholder || ''"
@@ -98,7 +98,7 @@ function buildArchive() {
 
       <!-- API Key（BYOK，与魂兽大陆向导一致） -->
       <div class="pt-2 border-t border-stone-800">
-        <label class="block text-sm text-amber-200 mb-1">DeepSeek API Key（可选）</label>
+        <label class="app-form-label">DeepSeek API Key（可选）</label>
         <input :value="draft.apiKey" type="password" @input="onApiKeyInput" autocomplete="off"
           class="w-full bg-stone-900 border border-stone-700 rounded p-2 font-mono text-sm"
           placeholder="sk-... 你自己的 Key，不填则使用站点默认额度" />

@@ -129,7 +129,7 @@ const trialLeft = () => Math.max(0, entitlement.trialLimit - entitlement.trialUs
 
       <!-- 主推通道（小红书自动发货，置顶） -->
       <section class="app-activation-section text-center">
-        <p class="text-sm font-bold text-red-300 mb-2">⭐ 推荐：最快获取，24小时自动发货</p>
+        <p class="text-sm font-medium text-stone-200 mb-2">推荐 · 最快获取，24小时自动发货</p>
         <a href="http://xhslink.cn/o/7t8lsg92E0e" target="_blank" rel="noopener noreferrer"
           class="app-button app-xhs-button">
           前往小红书购买
@@ -150,14 +150,14 @@ const trialLeft = () => Math.max(0, entitlement.trialLimit - entitlement.trialUs
       </section>
 
       <!-- 微信防催更免责声明（核心） -->
-      <p class="mb-2 rounded-md border border-orange-500/60 bg-orange-500/10 p-2.5 text-xs leading-relaxed text-orange-300 font-medium">
+      <section class="app-activation-section"><h3 class="app-section-title mb-2">帮助与提示</h3><p class="app-help-note">
         ⚠️ 温馨提示：博主回复微信信息不及时，通常只能在每天晚上统一回复并发放激活码。如果您比较着急游玩，请务必使用上方的小红书自动发货通道！
       </p>
 
       <!-- 防风控提示 -->
-      <p class="mb-2 rounded-md border border-amber-700/40 bg-amber-950/30 p-2.5 text-xs leading-relaxed text-amber-400">
+      <p class="app-help-note">
         ⚠️ 温馨提示：如果微信扫码提示风险、无法支付或长时间未回复，请务必使用上方【小红书】推荐通道自动获取激活码。
-      </p>
+      </p></section>
 
       <!-- 输码激活 -->
       <input v-model="code" @keyup.enter="submit" :disabled="busy"
