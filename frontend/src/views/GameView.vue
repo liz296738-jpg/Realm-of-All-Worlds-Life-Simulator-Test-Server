@@ -16,20 +16,6 @@ import StatusPanel from '../components/StatusPanel.vue'
 import SavePanel from '../components/SavePanel.vue'
 import CharacterPanel from '../components/CharacterPanel.vue'
 
-// ── 动态等级字段（零硬编码） ──
-const levelField = computed(() => game.state?.meta?.level_field || '')
-const levelValue = computed(() => {
-  const lf = levelField.value
-  const ch = game.state?.character
-  if (!lf || !ch) return null
-  return ch[lf]
-})
-const headerLevel = computed(() => {
-  const lv = levelValue.value
-  if (lv != null && lv !== '') return `${lv}`
-  return null
-})
-
 const contextItems = computed(() => {
   const state = game.state || {}
   const items = []
@@ -38,16 +24,16 @@ const contextItems = computed(() => {
   const turn = state.meta?.turn
   if (turn !== undefined && turn !== null && turn !== '') items.push(`第 ${turn} 回合`)
   if (state.location?.season) items.push(state.location.season)
-  if (headerLevel.value) items.push(`${levelField.value} ${headerLevel.value}`)
-  return items.slice(0, 4)
+  return items.slice(0, 3)
 })
 
 const emit = defineEmits(['open-settings'])
 
 function openPanel(name) {
-  togglePanel('showStatus', name === 'showStatus')
-  togglePanel('showCharacter', name === 'showCharacter')
-  togglePanel('showSave', name === 'showSave')
+  const nextOpen = !ui[name]
+  togglePanel('showStatus', name === 'showStatus' && nextOpen)
+  togglePanel('showCharacter', name === 'showCharacter' && nextOpen)
+  togglePanel('showSave', name === 'showSave' && nextOpen)
 }
 
 // 后端返回的 turns 不含渲染后的 html，此处补齐（剥掉 AI 自带的选项块，与当前回合显示一致）
