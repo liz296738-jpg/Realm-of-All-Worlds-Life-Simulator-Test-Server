@@ -103,7 +103,7 @@ function buildArchive() {
           <button v-for="id in IDENTITIES" :key="id.key"
             @click="updateDraft('identity', id.key)"
             class="app-choice-row transition"
-            :class="draft.identity === id.key ? 'border-primary bg-amber-900/30' : 'border-stone-700 bg-stone-900 hover:border-stone-500'">
+            :aria-pressed="draft.identity === id.key" :class="draft.identity === id.key ? 'app-choice-row-selected' : ''">
             <div class="font-medium text-stone-200">{{ id.key }}</div>
             <div class="text-xs text-stone-400 mt-1">{{ id.hint }}</div>
           </button>
@@ -199,7 +199,7 @@ function buildArchive() {
           <button v-for="t in TIERS" :key="t.key"
             @click="pickTier(t.key)"
             class="app-choice-row transition"
-            :class="draft.talentTier === t.key ? 'border-primary bg-amber-900/30' : 'border-stone-700 bg-stone-900 hover:border-stone-500'">
+            :aria-pressed="draft.talentTier === t.key" :class="draft.talentTier === t.key ? 'app-choice-row-selected' : ''">
             <div class="font-medium text-stone-200">{{ t.key }} <span class="text-xs text-amber-400">{{ t.range }}</span></div>
             <div class="text-xs text-stone-400 mt-1">{{ t.note }}</div>
           </button>

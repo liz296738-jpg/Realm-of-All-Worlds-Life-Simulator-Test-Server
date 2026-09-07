@@ -97,18 +97,18 @@ const trialLeft = () => Math.max(0, entitlement.trialLimit - entitlement.trialUs
       </div>
 
       <!-- 当前状态 -->
-      <div class="text-sm mb-4">
+      <section class="app-activation-section text-sm">
         <p v-if="entitlement.paid" class="text-emerald-400">
           ✓ 已订阅 · 无限游玩（至 {{ fmtDate(entitlement.paidUntil) }}）
         </p>
         <p v-else class="text-stone-300">
           免费试玩中 · 剩余 {{ trialLeft() }} / {{ entitlement.trialLimit }} 回合
         </p>
-      </div>
+      </section>
 
       <!-- 本机激活码（多端共用）：已订阅即展示，可随时复制 -->
       <div v-if="entitlement.paid && entitlement.subscriptionCode"
-        class="mb-4 rounded-md border border-amber-800/50 bg-amber-950/30 p-3">
+        class="app-activation-section app-code-row">
         <p class="text-[11px] text-amber-300/90 mb-1">你的激活码（同一天内换设备 / 换浏览器，重新输入它即可恢复，请保存）</p>
         <div class="flex items-center gap-2">
           <code class="flex-1 break-all font-mono text-xs text-amber-100 leading-relaxed select-all">
@@ -123,22 +123,22 @@ const trialLeft = () => Math.max(0, entitlement.trialLimit - entitlement.trialUs
       </div>
 
       <!-- 触发原因 -->
-      <p v-if="ui.activationMsg" class="text-xs text-amber-300/90 bg-amber-950/40 border border-amber-800/40 rounded p-2 mb-3">
+      <p v-if="ui.activationMsg" class="app-activation-note">
         {{ ui.activationMsg }}
       </p>
 
       <!-- 主推通道（小红书自动发货，置顶） -->
-      <div class="mb-3 rounded-lg border-2 border-red-500/60 bg-red-500/15 p-3 text-center">
+      <section class="app-activation-section text-center">
         <p class="text-sm font-bold text-red-300 mb-2">⭐ 推荐：最快获取，24小时自动发货</p>
         <a href="http://xhslink.cn/o/7t8lsg92E0e" target="_blank" rel="noopener noreferrer"
-          class="inline-block px-5 py-2.5 rounded-lg bg-red-500 text-white font-semibold hover:bg-red-400 transition text-sm">
-          📕 去小红书店铺购买
+          class="app-button app-xhs-button">
+          前往小红书购买
         </a>
         <p class="text-[11px] text-red-300/80 mt-1.5">付款后自动发货激活码，无需等待人工回复</p>
-      </div>
+      </section>
 
       <!-- 备用通道（微信扫码，下移） -->
-      <div class="mb-3 rounded-lg border border-stone-700 bg-stone-800/60 p-3 text-center">
+      <section class="app-activation-section text-center">
         <p class="text-[11px] text-stone-500 mb-2">—— 备用通道 ——</p>
         <img :src="wechatQr" alt="微信收款码" class="w-32 h-32 mx-auto rounded object-contain bg-white p-1 mb-2" />
         <p class="text-sm text-stone-200 font-medium mb-1">微信扫码支付 1 元</p>
@@ -147,7 +147,7 @@ const trialLeft = () => Math.max(0, entitlement.trialLimit - entitlement.trialUs
           告诉对方要激活码即可——确认收款后把<b>当天</b>的码回复给你。<br/>
           在对应日起 30 天内激活即可，激活后无限游玩至到期日，到期后再领新码续费。
         </p>
-      </div>
+      </section>
 
       <!-- 微信防催更免责声明（核心） -->
       <p class="mb-2 rounded-md border border-orange-500/60 bg-orange-500/10 p-2.5 text-xs leading-relaxed text-orange-300 font-medium">
@@ -162,9 +162,9 @@ const trialLeft = () => Math.max(0, entitlement.trialLimit - entitlement.trialUs
       <!-- 输码激活 -->
       <input v-model="code" @keyup.enter="submit" :disabled="busy"
         placeholder="粘贴激活码，如 XXXX-XXXX-XXXX"
-        class="w-full mb-2 px-3 py-2 rounded-md bg-stone-800 border border-stone-600 text-stone-100 placeholder-stone-500 focus:border-primary outline-none" />
+        class="app-input w-full mb-2 text-base" />
       <button @click="submit" :disabled="busy"
-        class="w-full py-2.5 rounded-lg bg-primary text-stone-950 font-medium hover:opacity-80 disabled:opacity-50 transition">
+        class="app-button app-button-primary w-full disabled:opacity-50">
         {{ busy ? '激活中…' : '激活' }}
       </button>
 

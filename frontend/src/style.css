@@ -940,6 +940,23 @@ textarea.app-input {
 .app-flow .border-stone-800 { border-color:var(--separator); }
 .app-flow .bg-primary { background:var(--accent); }
 .app-character-review { background:var(--surface-2); border:1px solid var(--separator); border-radius:var(--radius-xl); box-shadow:var(--shadow-soft); }
+/* 17–21. Panel internals */
+.app-save-actions,.app-save-entry-actions { display:flex; gap:8px; flex-wrap:wrap; }
+.app-save-actions { margin:16px 0; }
+.app-save-message { margin:8px 0; color:var(--text-secondary); font-size:.8125em; }
+.app-save-list { max-height:48dvh; overflow:auto; }
+.app-save-entry { padding:14px 0; border-bottom:1px solid var(--separator); }
+.app-save-entry-head { display:flex; justify-content:space-between; gap:12px; }
+.app-save-name { color:var(--text-primary); font-size:.9375em; font-weight:600; }
+.app-save-turn,.app-save-meta { color:var(--text-tertiary); font-size:.75em; }
+.app-save-turn { margin-left:8px; }.app-save-meta{margin-top:3px}.app-save-entry-actions{margin-top:12px}
+.app-activation-section { padding:16px 0; border-bottom:1px solid var(--separator); }.app-code-row{color:var(--text-secondary)}
+.app-activation-note { margin:12px 0; padding-left:10px; border-left:2px solid var(--warning); color:var(--text-secondary); font-size:.8125em; line-height:1.6; }
+.app-xhs-button { background:#e44444; color:white; }.app-xhs-button:hover{filter:brightness(1.06)}
+.app-toast { padding:10px 14px; border-radius:var(--radius-md); box-shadow:var(--shadow-floating); }.app-toast-success{background:var(--success-soft);color:var(--success)}.app-toast-danger{background:var(--danger-soft);color:var(--danger)}
+.app-choice-row-selected { border-color:var(--accent-border)!important; background:var(--accent-soft)!important; }
+.app-settings-section { padding:15px 0; border-bottom:1px solid var(--separator); }.app-settings-section:last-child{border-bottom:0}
+.app-settings-section > button { min-height:44px; color:var(--text-primary)!important; }.app-settings-section .border-stone-700{border-color:var(--separator)!important}.app-settings-section .bg-stone-800{background:var(--surface-1)!important}
 .app-form-label { display:block; margin-bottom:6px; color:var(--text-secondary); font-size:.875em; }
 .app-choice-row { width:100%; min-height:48px; padding:10px 12px; border:1px solid var(--separator); border-radius:var(--radius-sm); background:var(--surface-1); color:var(--text-primary); text-align:left; }
 .app-choice-row[aria-pressed='true'] { border-color:var(--accent-border); background:var(--accent-soft); }

@@ -49,7 +49,7 @@ const characterFields = computed(() => {
         <h3>
           {{ worldName(st) }}
           <span v-if="levelValue != null" class="text-amber-300 font-medium ml-1">
-          · {{ levelField }} {{ levelValue }}
+          · {{ levelValue }}
           </span>
         </h3>
         <button type="button" @click="togglePanel('showStatus', false)" class="app-icon-button" aria-label="关闭状态面板">×</button>
@@ -94,33 +94,33 @@ const characterFields = computed(() => {
 
       <!-- ── 势力声望（动态遍历） ── -->
       <template v-if="factions.length">
-        <h4 class="text-stone-300 text-xs font-semibold mt-4 mb-1">势力声望</h4>
-        <p class="text-xs text-stone-200">{{ factions.map(([k, v]) => `${k} ${v}`).join('、') }}</p>
+        <section class="app-panel-section"><h4 class="app-section-title mb-2">势力声望</h4>
+        <p class="text-xs text-stone-200">{{ factions.map(([k, v]) => `${k} ${v}`).join('、') }}</p></section>
       </template>
 
       <!-- ── 好感度 ── -->
-      <h4 class="text-stone-300 text-xs font-semibold mt-4 mb-1">好感度</h4>
+      <section class="app-panel-section"><h4 class="app-section-title mb-2">好感度</h4>
       <div v-if="affections.length" class="text-xs space-y-0.5">
         <div v-for="[name, val] in affections" :key="name" class="flex justify-between">
           <span class="text-stone-300">{{ name }}</span>
           <span :class="val >= 0 ? 'text-emerald-400' : 'text-red-400'">{{ val > 0 ? '+' : '' }}{{ val }}</span>
         </div>
       </div>
-      <p v-else class="text-xs text-stone-500">暂无变化的好感</p>
+      <p v-else class="text-xs text-stone-500">暂无变化的好感</p></section>
 
       <!-- ── 道具 ── -->
-      <h4 class="text-stone-300 text-xs font-semibold mt-4 mb-1">道具</h4>
-      <p class="text-xs text-stone-200">{{ st.inventory.length ? st.inventory.join('、') : '无' }}</p>
+      <section class="app-panel-section"><h4 class="app-section-title mb-2">道具</h4>
+      <p class="text-xs text-stone-200">{{ st.inventory.length ? st.inventory.join('、') : '无' }}</p></section>
 
       <!-- ── 笔记 ── -->
-      <h4 class="text-stone-300 text-xs font-semibold mt-4 mb-1">笔记</h4>
+      <section class="app-panel-section"><h4 class="app-section-title mb-2">记录</h4>
       <div v-if="st.notes.length" class="text-xs space-y-0.5">
         <p v-for="(n, i) in st.notes" :key="i" class="text-stone-300">· {{ n }}</p>
       </div>
-      <p v-else class="text-xs text-stone-500">暂无</p>
+      <p v-else class="text-xs text-stone-500">暂无</p></section>
 
       <!-- ── 元信息 ── -->
-      <div class="mt-4 pt-3 border-t border-stone-700 text-[11px] text-stone-500 space-y-0.5">
+      <div class="app-panel-section text-[11px] text-stone-500 space-y-0.5">
         <p>游玩方向：{{ st.meta.direction }} · 时间线：{{ st.meta.timeline_binding }}</p>
         <p>回合 {{ st.meta.turn }} · 回溯剩余 {{ st.meta.rewind_left }} 次 · 成就 {{ st.meta.achievements.length }}</p>
       </div>

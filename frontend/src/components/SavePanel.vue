@@ -85,31 +85,31 @@ onMounted(refresh)
           <button @click="togglePanel('showSave', false)" class="app-icon-button" aria-label="关闭存档面板">×</button>
         </div>
 
-        <div class="flex gap-2 mb-4">
+        <div class="app-save-actions">
           <button @click="doSave" :disabled="loading || !game.sessionId"
-            class="flex-1 px-3 py-2 rounded bg-primary text-stone-950 text-sm font-medium disabled:opacity-30">
+            class="app-button app-button-primary flex-1 disabled:opacity-30">
             保存当前进度
           </button>
           <button @click="goHome"
-            class="px-3 py-2 rounded bg-stone-700 text-amber-300 hover:bg-stone-600 text-sm font-medium">
+            class="app-button app-button-ghost">
             返回主界面
           </button>
         </div>
-        <p v-if="msg" class="text-xs text-amber-300 mb-2">{{ msg }}</p>
+        <p v-if="msg" class="app-save-message">{{ msg }}</p>
 
-        <div class="space-y-2 max-h-64 overflow-y-auto">
+        <div class="app-save-list">
           <div v-for="s in saves" :key="s.session_id"
-            class="rounded border border-stone-700 p-3 bg-stone-800/50">
-            <div class="flex justify-between items-start">
-              <div class="text-sm">
-                <span class="text-stone-100 font-medium">{{ s.name }}</span>
-                <span class="text-stone-500 text-xs ml-2">{{ s.level_field }} {{ s.level }}</span>
-                <div class="text-xs text-stone-400 mt-0.5">{{ s.place }} · {{ s.date }} · 回合{{ s.turn }}</div>
+            class="app-save-entry">
+            <div class="app-save-entry-head">
+              <div>
+                <span class="app-save-name">{{ s.name }}</span>
+                <span class="app-save-turn">第 {{ s.turn }} 回合</span>
+                <div class="app-save-meta">{{ s.place }} · {{ s.date }}</div>
               </div>
-              <div class="flex gap-1 shrink-0">
-                <button @click="doResume(s.session_id)" class="text-xs px-2 py-1 rounded bg-stone-700 text-stone-200 hover:bg-stone-600">继续</button>
-                <button @click="doExport(s.session_id)" :disabled="exporting !== null" title="把这段旅程的剧情导出成 Markdown 小说" class="text-xs px-2 py-1 rounded bg-stone-700 text-amber-300 hover:bg-stone-600 disabled:opacity-40">{{ exporting === s.session_id ? '导出中…' : '导出故事' }}</button>
-                <button @click="doDelete(s.session_id)" class="text-xs px-2 py-1 rounded bg-red-900/60 text-red-200 hover:bg-red-800">删</button>
+              <div class="app-save-entry-actions">
+                <button @click="doResume(s.session_id)" class="app-button app-button-primary">继续</button>
+                <button @click="doExport(s.session_id)" :disabled="exporting !== null" title="把这段旅程的剧情导出成 Markdown 小说" class="app-button app-button-secondary">{{ exporting === s.session_id ? '导出中…' : '导出故事' }}</button>
+                <button @click="doDelete(s.session_id)" class="app-button app-button-ghost app-danger-action" aria-label="删除存档">删除</button>
               </div>
             </div>
           </div>

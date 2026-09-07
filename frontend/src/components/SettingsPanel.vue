@@ -171,7 +171,7 @@ function openActivation() {
       </div>
 
       <!-- 主题分组（可折叠） -->
-      <div class="border-b border-stone-800 pb-3 mb-3">
+      <section class="app-settings-section">
         <button type="button" @click="themeOpen = !themeOpen"
           class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
           <span class="font-medium">主题</span>
@@ -224,10 +224,10 @@ function openActivation() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- 文字数量分组（可折叠） -->
-      <div class="border-b border-stone-800 pb-3 mb-3">
+      <section class="app-settings-section">
         <button type="button" @click="freedomOpen = !freedomOpen"
           class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
           <span class="font-medium">文字数量</span>
@@ -248,10 +248,10 @@ function openActivation() {
             决定每次选择后 AI 生成的剧情文字多少：档位越高文字越长、细节越丰富，生成耗时也相应增加。
           </p>
         </div>
-      </div>
+      </section>
 
       <!-- 数据管理分组（可折叠） -->
-      <div class="border-b border-stone-800 pb-3 mb-3">
+      <section class="app-settings-section">
         <button type="button" @click="dataOpen = !dataOpen"
           class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
           <span class="font-medium">数据管理</span>
@@ -282,10 +282,10 @@ function openActivation() {
             导出为 JSON 备份文件；浏览器清缓存或换设备后，可通过导入恢复世界与存档。
           </p>
         </div>
-      </div>
+      </section>
 
       <!-- 订阅分组（可折叠） -->
-      <div>
+      <section class="app-settings-section">
         <button type="button" @click="subOpen = !subOpen"
           class="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm text-stone-200 transition hover:bg-stone-800 hover:text-amber-200">
           <span class="font-medium">订阅</span>
@@ -298,7 +298,7 @@ function openActivation() {
           </button>
           <p class="mt-2 text-[11px] leading-relaxed text-stone-500">{{ statusText }}</p>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
