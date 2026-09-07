@@ -48,9 +48,9 @@ function buildArchive() {
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto px-4 py-8">
+  <div class="app-flow max-w-2xl mx-auto px-4 py-8">
     <div class="mb-6 flex items-center justify-between">
-      <h2 class="text-xl font-semibold text-amber-100">创建角色 · {{ world.name }}</h2>
+      <div><h2 class="text-xl font-semibold text-stone-100">创建你的角色</h2><p class="text-xs text-stone-500 mt-1">{{ world.name }}</p></div>
       <div class="flex flex-wrap gap-1 text-xs">
         <span v-for="(st, i) in steps" :key="st.step"
           class="px-2 py-1 rounded-full"
@@ -110,11 +110,11 @@ function buildArchive() {
 
     <div class="mt-8 flex justify-between">
       <button @click="prevStep" :disabled="step === 1"
-        class="px-4 py-2 rounded bg-stone-800 text-stone-300 disabled:opacity-30">上一步</button>
+        class="app-button app-button-ghost disabled:opacity-30">返回</button>
       <button v-if="step < steps.length" @click="nextStep"
-        class="px-4 py-2 rounded bg-primary text-stone-950 font-medium">下一步</button>
+        class="app-button app-button-primary">下一步</button>
       <button v-else @click="emit('complete', buildArchive())"
-        class="px-4 py-2 rounded bg-primary text-stone-950 font-medium">查看档案卡</button>
+        class="app-button app-button-primary">查看档案</button>
     </div>
   </div>
 </template>

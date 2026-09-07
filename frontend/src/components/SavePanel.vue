@@ -78,21 +78,21 @@ onMounted(refresh)
 
 <template>
   <transition name="slide">
-    <div v-if="ui.showSave" class="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4" @click.self="togglePanel('showSave', false)">
-      <div class="w-full max-w-md rounded-lg border border-stone-700 bg-stone-900 p-5 shadow-2xl">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-amber-200 font-semibold">存档 / 读档</h3>
-          <button @click="togglePanel('showSave', false)" class="text-stone-400 hover:text-stone-200">✕</button>
+    <div v-if="ui.showSave" class="app-modal-backdrop" @click.self="togglePanel('showSave', false)">
+      <div class="app-modal app-save-panel">
+        <div class="app-sheet-header">
+          <h3>存档与旅程</h3>
+          <button @click="togglePanel('showSave', false)" class="app-icon-button" aria-label="关闭存档面板">×</button>
         </div>
 
         <div class="flex gap-2 mb-4">
           <button @click="doSave" :disabled="loading || !game.sessionId"
             class="flex-1 px-3 py-2 rounded bg-primary text-stone-950 text-sm font-medium disabled:opacity-30">
-            💾 存档当前进度
+            保存当前进度
           </button>
           <button @click="goHome"
             class="px-3 py-2 rounded bg-stone-700 text-amber-300 hover:bg-stone-600 text-sm font-medium">
-            🏠 返回主界面
+            返回主界面
           </button>
         </div>
         <p v-if="msg" class="text-xs text-amber-300 mb-2">{{ msg }}</p>
@@ -108,12 +108,12 @@ onMounted(refresh)
               </div>
               <div class="flex gap-1 shrink-0">
                 <button @click="doResume(s.session_id)" class="text-xs px-2 py-1 rounded bg-stone-700 text-stone-200 hover:bg-stone-600">继续</button>
-                <button @click="doExport(s.session_id)" :disabled="exporting !== null" title="把这段旅程的剧情导出成 Markdown 小说" class="text-xs px-2 py-1 rounded bg-stone-700 text-amber-300 hover:bg-stone-600 disabled:opacity-40">{{ exporting === s.session_id ? '导出中…' : '📖 导出' }}</button>
+                <button @click="doExport(s.session_id)" :disabled="exporting !== null" title="把这段旅程的剧情导出成 Markdown 小说" class="text-xs px-2 py-1 rounded bg-stone-700 text-amber-300 hover:bg-stone-600 disabled:opacity-40">{{ exporting === s.session_id ? '导出中…' : '导出故事' }}</button>
                 <button @click="doDelete(s.session_id)" class="text-xs px-2 py-1 rounded bg-red-900/60 text-red-200 hover:bg-red-800">删</button>
               </div>
             </div>
           </div>
-          <p v-if="!saves.length" class="text-sm text-stone-500 py-4 text-center">还没有存档</p>
+          <p v-if="!saves.length" class="app-empty-state">还没有存档。<br>当你保存旅程后，它会出现在这里。</p>
         </div>
       </div>
     </div>

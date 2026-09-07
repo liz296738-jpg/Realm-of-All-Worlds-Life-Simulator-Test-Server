@@ -56,9 +56,9 @@ const genericRows = computed(() => {
 </script>
 
 <template>
-  <div class="max-w-xl mx-auto px-4 py-8">
-    <div class="rounded-lg border border-amber-800/60 bg-stone-900/80 p-6 shadow-2xl">
-      <h2 class="text-center text-2xl font-bold text-amber-200 mb-1">角色档案卡</h2>
+  <div class="app-flow max-w-xl mx-auto px-4 py-8">
+    <div class="app-character-review p-6">
+      <h2 class="text-center text-2xl font-bold text-stone-100 mb-1">你的角色</h2>
       <p class="text-center text-sm text-stone-500 mb-6">
         {{ isGeneric ? `确认后，你在「${world.name}」的旅程正式开始` : '确认后，你的魂兽大陆之行正式开始' }}
       </p>
@@ -91,8 +91,8 @@ const genericRows = computed(() => {
         <div class="flex justify-between pb-2"><dt class="text-stone-400">特殊物品</dt><dd class="text-stone-100 text-right">{{ card.items }}</dd></div>
       </dl>
       <div class="mt-8 flex gap-3">
-        <button @click="emit('back')" class="flex-1 px-4 py-2 rounded bg-stone-800 text-stone-300">返回修改</button>
-        <button @click="emit('confirm')" class="flex-1 px-4 py-2 rounded bg-primary text-stone-950 font-medium">确认，开始游戏</button>
+        <button @click="emit('back')" class="app-button app-button-secondary flex-1">返回修改</button>
+        <button @click="emit('confirm')" class="app-button app-button-primary flex-1">开始人生</button>
       </div>
     </div>
   </div>

@@ -88,12 +88,12 @@ const trialLeft = () => Math.max(0, entitlement.trialLimit - entitlement.trialUs
 </script>
 
 <template>
-  <div v-if="ui.activationOpen" class="fixed inset-0 z-50 bg-black/70 flex items-center justify-center px-4"
+  <div v-if="ui.activationOpen" class="app-modal-backdrop"
     @click.self="close">
-    <div class="w-full max-w-sm rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h2 class="font-medium text-amber-200">订阅 / 激活码</h2>
-        <button @click="close" class="text-stone-500 hover:text-stone-300 text-lg leading-none">✕</button>
+    <div class="app-modal app-activation-panel">
+      <div class="app-sheet-header mb-4">
+        <h2>订阅与激活</h2>
+        <button @click="close" class="app-icon-button" aria-label="关闭订阅与激活">×</button>
       </div>
 
       <!-- 当前状态 -->

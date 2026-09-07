@@ -916,3 +916,31 @@ textarea.app-input {
 .game-side-panel { top: calc(68px + var(--safe-top)); right: max(12px, var(--safe-right)); width: min(320px, calc(100vw - 24px - var(--safe-left) - var(--safe-right))); max-height: calc(100dvh - 88px - var(--safe-top) - var(--safe-bottom)); border: 1px solid var(--separator); border-radius: var(--radius-lg); background: var(--surface-3); box-shadow: var(--shadow-floating); }
 @media (max-width: 420px) { .game-header-title { padding: 0 3px; } }
 @media (min-width: 768px) { .game-side-panel { top: calc(76px + var(--safe-top)); } }
+
+/* 16. Panels / Sheets */
+.app-modal-backdrop { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; background: rgba(0,0,0,.62); }
+.app-modal { width: 100%; max-height: min(88dvh, 760px); overflow: auto; padding: 18px max(18px, var(--safe-right)) calc(18px + var(--safe-bottom)) max(18px, var(--safe-left)); background: var(--surface-3); border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: var(--shadow-modal); }
+.app-sheet-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:14px; border-bottom:1px solid var(--separator); }
+.app-sheet-header h2,.app-sheet-header h3 { margin:0; color:var(--text-primary); font-size:1.0625rem; font-weight:600; }
+.app-sheet-body { padding:18px 0; }
+.app-sheet-footer { display:flex; gap:10px; padding-top:14px; border-top:1px solid var(--separator); }
+.app-panel-section { padding:16px 0; border-bottom:1px solid var(--separator); }
+.app-panel-section:last-child { border-bottom:0; }
+.app-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.app-empty-state { padding:32px 16px; color:var(--text-tertiary); font-size:.875em; line-height:1.7; text-align:center; }
+.app-danger-action { color:var(--danger); }
+.app-npc-entry { padding:14px 0; border-bottom:1px solid var(--separator); }
+.app-npc-entry:last-child { border-bottom:0; }
+.app-character-panel .app-chip { background:var(--surface-1); }
+/* 22. Creation flow */
+.app-flow { min-height:100%; color:var(--text-primary); }
+.app-flow input:not([type='range']):not([type='checkbox']), .app-flow select, .app-flow textarea { width:100%; min-height:44px; padding:10px 12px; border:1px solid var(--separator); border-radius:var(--radius-sm); background:var(--surface-1); color:var(--text-primary); font:inherit; font-size:16px; }
+.app-flow textarea { min-height:88px; }
+.app-flow input:focus, .app-flow select:focus, .app-flow textarea:focus { outline:none; border-color:var(--accent-border); box-shadow:0 0 0 3px var(--accent-soft); }
+.app-flow .border-stone-800 { border-color:var(--separator); }
+.app-flow .bg-primary { background:var(--accent); }
+.app-character-review { background:var(--surface-2); border:1px solid var(--separator); border-radius:var(--radius-xl); box-shadow:var(--shadow-soft); }
+.app-form-label { display:block; margin-bottom:6px; color:var(--text-secondary); font-size:.875em; }
+.app-choice-row { width:100%; min-height:48px; padding:10px 12px; border:1px solid var(--separator); border-radius:var(--radius-sm); background:var(--surface-1); color:var(--text-primary); text-align:left; }
+.app-choice-row[aria-pressed='true'] { border-color:var(--accent-border); background:var(--accent-soft); }
+@media (min-width:768px) { .app-modal-backdrop { align-items:center; justify-content:center; padding:24px; } .app-modal { width:min(100%, 540px); max-height:min(82dvh,760px); border-radius:var(--radius-xl); padding:22px; } }

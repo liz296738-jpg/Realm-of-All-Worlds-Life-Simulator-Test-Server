@@ -159,14 +159,14 @@ function openActivation() {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4"
+  <div class="app-modal-backdrop"
     @click.self="emit('close')">
-    <div class="w-full max-w-sm rounded-xl border border-stone-700 bg-stone-900/95 p-5 shadow-2xl backdrop-blur">
-      <div class="mb-4 flex items-center justify-between">
-        <h2 class="font-medium text-amber-200">设置</h2>
+    <div class="app-modal app-settings-panel">
+      <div class="app-sheet-header">
+        <h2>设置</h2>
         <button type="button" @click="emit('close')"
-          class="px-3 py-1.5 rounded text-sm font-medium bg-primary text-stone-950 transition hover:opacity-80">
-          完成
+          class="app-icon-button" aria-label="关闭设置">
+          ×
         </button>
       </div>
 

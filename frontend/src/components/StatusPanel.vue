@@ -42,12 +42,11 @@ const characterFields = computed(() => {
 <template>
   <!-- 状态栏抽屉 -->
   <transition name="slide">
-    <aside v-if="ui.showStatus && st"
-      class="game-side-panel fixed z-20 overflow-y-auto p-4">
+    <aside v-if="ui.showStatus && st" class="game-side-panel app-status-panel fixed z-20 overflow-y-auto p-4">
 
       <!-- ── 标题：世界名 + 等级 ── -->
-      <div class="flex items-center justify-between gap-3 mb-3">
-        <h3 class="text-amber-200 font-semibold">
+      <div class="app-sheet-header mb-4">
+        <h3>
           {{ worldName(st) }}
           <span v-if="levelValue != null" class="text-amber-300 font-medium ml-1">
           · {{ levelField }} {{ levelValue }}
@@ -57,7 +56,7 @@ const characterFields = computed(() => {
       </div>
 
       <!-- ── 角色字段（动态遍历） ── -->
-      <dl v-if="characterFields.length" class="text-xs space-y-1.5">
+      <dl v-if="characterFields.length" class="app-panel-section text-xs space-y-2">
         <div v-for="row in characterFields" :key="row.key" class="flex justify-between">
           <dt class="text-stone-400">{{ row.label }}</dt>
           <dd class="text-stone-100 text-right">{{ row.value }}</dd>
@@ -65,32 +64,32 @@ const characterFields = computed(() => {
       </dl>
 
       <!-- ── 所在地 / 时间 ── -->
-      <dl class="text-xs space-y-1.5 mt-2">
+      <dl class="app-panel-section text-xs space-y-2">
         <div class="flex justify-between"><dt class="text-stone-400">所在地</dt><dd class="text-stone-100 text-right">{{ st.location.place }}</dd></div>
         <div class="flex justify-between"><dt class="text-stone-400">时间</dt><dd class="text-stone-100">{{ st.location.date }}（{{ st.location.season }}）</dd></div>
       </dl>
 
       <!-- ── 魂环（有 soul_rings 的 world 才渲染） ── -->
       <template v-if="rings.length">
-        <h4 class="text-stone-300 text-xs font-semibold mt-4 mb-1">魂环配置</h4>
+        <section class="app-panel-section"><h4 class="app-section-title mb-2">魂环配置</h4>
         <div class="text-xs space-y-1">
           <div v-for="r in rings" :key="r.slot" class="text-stone-200">
             第{{ r.slot }}环 · {{ r.years }}年 · {{ r.beast }}
             <span class="text-stone-500">（{{ r.skill }}）</span>
           </div>
-        </div>
+        </div></section>
       </template>
 
       <!-- ── 资源（动态遍历） ── -->
       <template v-if="resources.length">
-        <h4 class="text-stone-300 text-xs font-semibold mt-4 mb-1">资源</h4>
-        <p class="text-xs text-stone-200">{{ resources.map(([k, v]) => `${k} ${v}`).join('、') }}</p>
+        <section class="app-panel-section"><h4 class="app-section-title mb-2">资源</h4>
+        <p class="text-xs text-stone-200">{{ resources.map(([k, v]) => `${k} ${v}`).join('、') }}</p></section>
       </template>
 
       <!-- ── 属性（动态遍历） ── -->
       <template v-if="stats.length">
-        <h4 class="text-stone-300 text-xs font-semibold mt-4 mb-1">属性</h4>
-        <p class="text-xs text-stone-200">{{ stats.map(([k, v]) => `${k} ${v}`).join('、') }}</p>
+        <section class="app-panel-section"><h4 class="app-section-title mb-2">属性</h4>
+        <p class="text-xs text-stone-200">{{ stats.map(([k, v]) => `${k} ${v}`).join('、') }}</p></section>
       </template>
 
       <!-- ── 势力声望（动态遍历） ── -->

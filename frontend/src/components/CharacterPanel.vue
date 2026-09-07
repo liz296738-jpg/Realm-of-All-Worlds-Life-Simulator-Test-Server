@@ -117,16 +117,16 @@ function close() {
   <!-- 角色情报抽屉 -->
   <transition name="slide">
     <aside v-if="ui.showCharacter"
-      class="game-side-panel fixed z-20 overflow-y-auto p-4">
+      class="game-side-panel app-character-panel fixed z-20 overflow-y-auto p-4">
 
       <!-- Header -->
       <div class="flex justify-between items-center mb-3">
         <div class="flex items-center gap-2">
-          <h3 class="text-amber-200 font-semibold text-sm">角色情报</h3>
+          <h3 class="text-stone-100 font-semibold text-sm">角色情报</h3>
           <button v-if="npcNames.length" @click="refreshAll" :disabled="extracting"
             class="text-[11px] px-1.5 py-0.5 rounded border border-stone-600 text-stone-400 hover:text-amber-300 hover:border-amber-700 disabled:opacity-40"
             :title="extracting ? '提取中…' : 'AI 分析上下文，刷新所有角色情报'">
-            {{ extracting ? '⏳' : '🔄' }}
+            {{ extracting ? '提取中…' : '刷新全部' }}
           </button>
         </div>
         <button @click="close" class="text-stone-400 hover:text-stone-200 text-lg leading-none">✕</button>
@@ -138,7 +138,7 @@ function close() {
       <!-- NPC 列表 -->
       <div v-if="npcNames.length" class="space-y-3">
         <div v-for="name in npcNames" :key="name"
-          class="rounded-lg border border-stone-700 bg-stone-800/50 overflow-hidden">
+          class="app-npc-entry overflow-hidden">
 
           <!-- ═══ Header：名字 + 操作 ═══ -->
           <div class="flex items-center justify-between px-3 pt-2.5 pb-0.5">
@@ -146,7 +146,7 @@ function close() {
             <button @click="refreshNpc(name)" :disabled="loading[name]"
               class="text-[10px] px-1 py-0.5 rounded border border-stone-700 text-stone-500 hover:text-amber-400 hover:border-amber-800 disabled:opacity-30"
               :title="hasProfile(name) ? '重新分析上下文' : 'AI 提取该角色情报'">
-              {{ loading[name] ? '⏳' : '🔄' }}
+              {{ loading[name] ? '提取中…' : '刷新' }}
             </button>
           </div>
 
@@ -192,7 +192,7 @@ function close() {
               <!-- 喜好摘要 -->
               <p v-if="getProfile(name).preferences"
                 class="text-[11px] text-stone-400 leading-relaxed italic">
-                💬 {{ getProfile(name).preferences }}
+                {{ getProfile(name).preferences }}
               </p>
 
               <!-- 自定义备注 textarea（自动保存） -->
