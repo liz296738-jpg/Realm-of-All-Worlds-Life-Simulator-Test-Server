@@ -545,6 +545,10 @@ textarea.app-input {
   object-fit: cover;
   display: block;
 }
+.world-cover-preview-button { width:100%; padding:0; border:0; cursor:zoom-in; -webkit-tap-highlight-color:transparent; }
+.world-cover-preview-button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.world-cover-preview-button:hover img { transform:scale(1.01); }
+.world-cover-preview-button img { transition:transform var(--duration-fast) var(--ease-standard); }
 .world-cover-placeholder {
   position: absolute;
   inset: 0;
@@ -628,13 +632,6 @@ textarea.app-input {
   gap: 14px;
   width: 100%;
   padding: 14px;
-  border: none;
-  background: transparent;
-  color: inherit;
-  font-family: var(--font-ui);
-  text-align: left;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 .world-row-thumb {
   flex: 0 0 auto;
@@ -642,6 +639,8 @@ textarea.app-input {
   height: 54px;
   border-radius: var(--radius-sm);
 }
+.world-row-main-action { display:flex; align-items:center; min-width:0; flex:1; padding:0; border:0; background:transparent; color:inherit; font:inherit; text-align:left; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.world-row-main-action:focus-visible { outline:2px solid var(--accent); outline-offset:3px; border-radius:var(--radius-sm); }
 .world-row-thumb .world-cover-initial {
   font-size: 1.5rem;
 }
@@ -740,6 +739,21 @@ textarea.app-input {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ── 世界封面沉浸式预览 ── */
+.cover-lightbox { position:fixed; inset:0; z-index:60; display:grid; grid-template-rows:auto minmax(0, 1fr) auto; gap:12px; padding:var(--safe-top) max(16px, var(--safe-right)) calc(14px + var(--safe-bottom)) max(16px, var(--safe-left)); background:rgba(0,0,0,.88); color:var(--text-primary); }
+.cover-lightbox-header { display:flex; min-width:0; min-height:44px; align-items:center; justify-content:space-between; gap:12px; }
+.cover-lightbox-header h2 { min-width:0; margin:0; overflow:hidden; color:var(--text-primary); font-size:1rem; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+.cover-lightbox-close { flex:0 0 auto; background:var(--surface-2); color:var(--text-primary); }
+.cover-lightbox-viewport { position:relative; display:flex; min-width:0; min-height:0; align-items:center; justify-content:center; overflow:hidden; touch-action:none; }
+.cover-lightbox-image { display:block; max-width:92vw; max-height:82dvh; object-fit:contain; transform-origin:center center; transition:transform 140ms var(--ease-standard); user-select:none; -webkit-user-drag:none; }
+.cover-lightbox-viewport.is-zoomed { cursor:grab; }
+.cover-lightbox-viewport.is-dragging { cursor:grabbing; }
+.cover-lightbox-viewport.is-dragging .cover-lightbox-image { transition:none; }
+.cover-lightbox-controls { display:flex; align-items:center; justify-content:center; gap:8px; padding:2px 0; }
+.cover-lightbox-controls .app-button { display:inline-flex; min-width:44px; min-height:44px; align-items:center; justify-content:center; padding:0 12px; }
+.cover-lightbox-controls output { min-width:48px; color:var(--text-primary); font-variant-numeric:tabular-nums; text-align:center; }
+.cover-lightbox-controls button:disabled { opacity:.38; cursor:not-allowed; }
 
 /* ── 建世界入口（虚线卡片，弱化但仍可辨识） ── */
 .home-builder-cta {

@@ -7,9 +7,11 @@ import {
 } from '../store'
 import WorldFeaturedCard from '../components/WorldFeaturedCard.vue'
 import WorldListItem from '../components/WorldListItem.vue'
+import CoverLightbox from '../components/CoverLightbox.vue'
 
 const emit = defineEmits(['newGame', 'continue', 'open-settings'])
 const sessions = ref([])
+const previewCover = ref(null)
 
 // ── 世界封面映射（预留）：未来填入真实图片路径，无需改组件结构 ──
 const WORLD_COVERS = {
@@ -26,6 +28,16 @@ const WORLD_COVERS = {
 }
 function worldCover(w) {
   return (w && WORLD_COVERS[w.id]) || null
+}
+
+function openCover(world) {
+  const src = worldCover(world)
+  if (!src) return
+  previewCover.value = { src, title: world.name }
+}
+
+function closeCover() {
+  previewCover.value = null
 }
 
 // ── 分段控件：创作者世界 / 我的世界 ──
@@ -157,12 +169,13 @@ onMounted(async () => {
           </p>
           <template v-else-if="featuredWorld">
             <WorldFeaturedCard :world="featuredWorld" :save="saveForWorld(featuredWorld.id)"
-              :cover="worldCover(featuredWorld)" @enter="enterWorld(featuredWorld)" @continue="continueSave" />
+              :cover="worldCover(featuredWorld)" @enter="enterWorld(featuredWorld)" @continue="continueSave"
+              @preview="openCover(featuredWorld)" />
 
             <div v-if="restWorlds.length" class="space-y-2">
               <WorldListItem v-for="w in restWorlds" :key="w.id" :world="w"
                 :save="saveForWorld(w.id)" :cover="worldCover(w)"
-                @enter="enterWorld(w)" @continue="continueSave" />
+                @enter="enterWorld(w)" @continue="continueSave" @preview="openCover(w)" />
             </div>
           </template>
           <p v-else class="home-empty">没有找到匹配「{{ searchQuery }}」的世界。</p>
@@ -201,7 +214,7 @@ onMounted(async () => {
           <template v-if="worlds.mine.length">
             <WorldListItem v-for="w in worlds.mine" :key="w.id" :world="w" mine
               :save="saveForWorld(w.id)" :cover="worldCover(w)" :deleting="deleting === w.id"
-              @enter="enterWorld(w)" @continue="continueSave" @remove="delWorld" />
+              @enter="enterWorld(w)" @continue="continueSave" @remove="delWorld" @preview="openCover(w)" />
           </template>
           <p v-else-if="!showWorldBuilder" class="home-empty">
             还没有自建世界——上传一本你喜欢的小说，AI 会帮你搭出它的世界框架。
@@ -243,5 +256,8 @@ onMounted(async () => {
         <span>设置</span>
       </button>
     </nav>
+
+    <CoverLightbox :open="!!previewCover" :src="previewCover?.src || ''" :title="previewCover?.title || ''"
+      @close="closeCover" />
   </div>
 </template>

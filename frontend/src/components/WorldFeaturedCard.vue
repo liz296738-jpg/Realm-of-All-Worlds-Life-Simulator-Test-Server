@@ -6,7 +6,7 @@ const props = defineProps({
   save: { type: Object, default: null },
   cover: { type: String, default: null },
 })
-const emit = defineEmits(['enter', 'continue'])
+const emit = defineEmits(['enter', 'continue', 'preview'])
 
 const initial = computed(() => (props.world?.name || '界').charAt(0))
 const coverFailed = ref(false)
@@ -15,10 +15,13 @@ watch(() => props.cover, () => { coverFailed.value = false })
 
 <template>
   <article class="world-featured">
-    <div class="world-cover world-cover--featured">
+    <button v-if="cover && !coverFailed" type="button" class="world-cover world-cover--featured world-cover-preview-button"
+      :aria-label="`查看 ${world.name} 世界封面`" @click="emit('preview')">
       <img v-if="cover && !coverFailed" :src="cover" :alt="world.name" loading="eager"
         fetchpriority="high" @error="coverFailed = true" />
-      <div v-else class="world-cover-placeholder" aria-hidden="true">
+    </button>
+    <div v-else class="world-cover world-cover--featured">
+      <div class="world-cover-placeholder" aria-hidden="true">
         <span class="world-cover-initial">{{ initial }}</span>
         <span class="world-cover-name">{{ world.name }}</span>
       </div>
