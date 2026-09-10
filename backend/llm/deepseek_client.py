@@ -10,6 +10,10 @@ _key = os.getenv("DEEPSEEK_API_KEY")
 # 服务端 key 可选：未配置时纯 BYOK（每位玩家填自己的 key）。
 _client = OpenAI(api_key=_key, base_url="https://api.deepseek.com") if _key else None
 MODEL = "deepseek-chat"
+# deepseek-chat 的 max_tokens 合法区间是 [1, 8192]，超出会被直接拒绝
+# （HTTP 400 invalid_request_error），服务端不做自动钳制。所有调用方的 max_tokens
+# 都必须过这道上限——越界的话异常会被 _call_turn 吞掉，玩家只看到模板叙述 + 单选项。
+MODEL_MAX_TOKENS = 8192
 # 输出 token 上限：限长既控成本又控延迟——叙述/结算无限长是"生成慢"的主因之一。
 NARRATIVE_MAX_TOKENS = 1200
 # 结算 JSON 的 max_tokens。实测真实回合（丰富 state_template）结算输出 650~900 字 ≈ 500~680 token，
@@ -123,7 +127,8 @@ def _call_turn(messages: list[dict], api_key: str | None = None,
                 model=MODEL,
                 messages=messages,
                 temperature=0.7,
-                max_tokens=max_tokens,
+                # 兜底钳制：routes 层已按档位算好，这里再挡一道，防止任何调用方越界被 400。
+                max_tokens=min(max_tokens, MODEL_MAX_TOKENS),
                 response_format={"type": "json_object"},
             )
             text = resp.choices[0].message.content or "{}"

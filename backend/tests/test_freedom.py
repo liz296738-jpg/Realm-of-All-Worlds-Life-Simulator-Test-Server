@@ -85,20 +85,35 @@ def test_freedom_max_tokens_passed_through(monkeypatch, tmp_path):
     monkeypatch.setattr(routes, "_call_turn", record_call_turn)
     c = TestClient(main.app)
 
-    # new-game freedom=5 → 3200 + 1200 = 4400 unified max_tokens
+    # new-game freedom=5 → min(3200 + 6000, 8192) = 8192，顶到模型上限但不越界
     r = c.post("/api/new-game", json={
         "archive": {"character": {"name": "X", "innate_soul_power": 5, "origin": "平民"}},
         "session_id": "f1", "freedom": 5,
     })
     assert r.status_code == 200
-    assert seen.get("max_tokens") == 4400  # tier[5].max_tokens(3200) + SETTLE_MAX_TOKENS(1200)
+    assert seen.get("max_tokens") == routes.MODEL_MAX_TOKENS
 
-    # act freedom=2 → 800 + 1200 = 2000
+    # act freedom=2 → 800 + 6000 = 6800，未触顶
     r2 = c.post("/api/act", json={"session_id": "f1", "action": "行动", "freedom": 2})
     assert r2.status_code == 200
-    assert seen.get("max_tokens") == 2000  # tier[2].max_tokens(800) + SETTLE_MAX_TOKENS(1200)
+    assert seen.get("max_tokens") == 6800
 
-    # act 缺省 freedom → 1600 + 1200 = 2800
+    # act 缺省 freedom → 1600 + 6000 = 7600，未触顶
     r3 = c.post("/api/act", json={"session_id": "f1", "action": "再行动"})
     assert r3.status_code == 200
-    assert seen.get("max_tokens") == 2800  # tier[3].max_tokens(1600) + SETTLE_MAX_TOKENS(1200)
+    assert seen.get("max_tokens") == 7600
+
+
+def test_freedom_over_cap_tiers_are_clamped():
+    """回归护栏：档位 4/5 的原始预算越界，routes 必须钳到模型上限。
+
+    带 6000 预留量时档位 4/5 为 8400/9200 > deepseek-chat 的 8192，会直接 HTTP 400；
+    异常被 _call_turn 吞掉后玩家只看到模板叙述 + 单个「继续前行」选项。
+    这条测试会在有人删掉 routes 里的 min(...) 钳制、或上调档位/预留量时失败。
+    """
+    over_cap = [v for v, t in routes.FREEDOM_TIERS.items()
+                if t["max_tokens"] + 6000 > routes.MODEL_MAX_TOKENS]
+    assert over_cap == [4, 5], (
+        f"预期恰好档位 4/5 越界，实际 {over_cap}；"
+        "若档位表或模型上限变了，请同步复核 routes.py 里 unified_max_tokens 的 min(...) 钳制"
+    )
