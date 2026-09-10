@@ -16,19 +16,25 @@ import StatusPanel from '../components/StatusPanel.vue'
 import SavePanel from '../components/SavePanel.vue'
 import CharacterPanel from '../components/CharacterPanel.vue'
 
-// ── 动态等级字段（零硬编码） ──
-const levelField = computed(() => game.state?.meta?.level_field || '')
-const levelValue = computed(() => {
-  const lf = levelField.value
-  const ch = game.state?.character
-  if (!lf || !ch) return null
-  return ch[lf]
+const contextItems = computed(() => {
+  const state = game.state || {}
+  const items = []
+  const age = state.character?.age
+  if (age !== undefined && age !== null && age !== '') items.push(`年龄 ${age}`)
+  const turn = state.meta?.turn
+  if (turn !== undefined && turn !== null && turn !== '') items.push(`第 ${turn} 回合`)
+  if (state.location?.season) items.push(state.location.season)
+  return items.slice(0, 3)
 })
-const headerLevel = computed(() => {
-  const lv = levelValue.value
-  if (lv != null && lv !== '') return `${lv}`
-  return null
-})
+
+const emit = defineEmits(['open-settings'])
+
+function openPanel(name) {
+  const nextOpen = !ui[name]
+  togglePanel('showStatus', name === 'showStatus' && nextOpen)
+  togglePanel('showCharacter', name === 'showCharacter' && nextOpen)
+  togglePanel('showSave', name === 'showSave' && nextOpen)
+}
 
 // 后端返回的 turns 不含渲染后的 html，此处补齐（剥掉 AI 自带的选项块，与当前回合显示一致）
 function hydrateTurns(turns) {
@@ -137,17 +143,34 @@ function onResume(payload) {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
-    <!-- 顶栏（右侧留出右上角常驻的自由度按钮位置） -->
-    <!-- pr-40：为右上角常驻的自由度按钮（约130px）预留空间 -->
-    <header class="flex items-center justify-between px-4 py-2 border-b border-stone-800 bg-stone-950/80 pr-40">
-      <button @click="togglePanel('showSave', true)" class="text-sm text-stone-400 hover:text-amber-300">💾 存档/读档</button>
-      <h1 class="text-sm text-stone-300 tracking-widest">{{ worldName(game.state) }}</h1>
-      <span class="text-sm text-stone-500 w-20 text-right">
-        <template v-if="headerLevel">{{ headerLevel }}</template>
-        <template v-else>第{{ game.state?.meta?.turn ?? '—' }}回合</template>
-      </span>
+  <div class="game-shell">
+    <header class="game-header">
+      <button type="button" class="app-icon-button" title="存档 / 读档" aria-label="存档 / 读档"
+        :aria-pressed="ui.showSave" @click="openPanel('showSave')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 3h12l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>
+      </button>
+      <div class="game-header-title">
+        <h1>{{ worldName(game.state) }}</h1>
+        <p v-if="game.state?.location?.place">{{ game.state.location.place }}</p>
+      </div>
+      <nav class="game-header-tools" aria-label="游戏工具">
+        <button type="button" class="app-icon-button" title="状态" aria-label="状态" :aria-pressed="ui.showStatus"
+          :class="{ 'game-tool-active': ui.showStatus }" @click="openPanel('showStatus')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 19V9m5 10V5m6 14v-8m5 8V3"/></svg>
+        </button>
+        <button type="button" class="app-icon-button" title="角色" aria-label="角色" :aria-pressed="ui.showCharacter"
+          :class="{ 'game-tool-active': ui.showCharacter }" @click="openPanel('showCharacter')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 21c.7-4 3-6 7-6s6.3 2 7 6"/></svg>
+        </button>
+        <button type="button" class="app-icon-button" title="设置" aria-label="设置" @click="emit('open-settings')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.55V20.3h-3v-.09A1.7 1.7 0 0 0 10.68 18.66a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15 1.7 1.7 0 0 0 5.47 14H5.4v-3h.07A1.7 1.7 0 0 0 7.02 10a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.12-2.12.06.06A1.7 1.7 0 0 0 10.68 6.34 1.7 1.7 0 0 0 11.7 4.8V4.7h3v.1a1.7 1.7 0 0 0 1.03 1.54A1.7 1.7 0 0 0 17.61 6l.06-.06 2.12 2.12-.06.06A1.7 1.7 0 0 0 19.4 10 1.7 1.7 0 0 0 20.94 11H21v3h-.06A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+        </button>
+      </nav>
     </header>
+
+    <div v-if="contextItems.length" class="game-context" aria-label="当前进度">
+      <span v-for="item in contextItems" :key="item">{{ item }}</span>
+    </div>
 
     <!-- 叙事流 -->
     <NarrativeStream />

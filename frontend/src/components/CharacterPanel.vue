@@ -114,25 +114,19 @@ function close() {
 </script>
 
 <template>
-  <!-- 悬浮按钮 -->
-  <button @click="togglePanel('showCharacter', !ui.showCharacter)"
-    class="fixed top-[6.5rem] right-4 z-30 px-3 py-1.5 rounded-full bg-stone-800/90 border border-stone-700 text-sm text-stone-300 hover:bg-stone-700">
-    {{ ui.showCharacter ? '收起 ✕' : '👥 角色' }}
-  </button>
-
   <!-- 角色情报抽屉 -->
   <transition name="slide">
     <aside v-if="ui.showCharacter"
-      class="fixed top-[8.5rem] right-4 z-20 w-80 max-h-[70vh] overflow-y-auto rounded-lg border border-stone-700 bg-stone-900/95 p-4 shadow-2xl">
+      class="game-side-panel app-character-panel fixed z-20 overflow-y-auto p-4">
 
       <!-- Header -->
       <div class="flex justify-between items-center mb-3">
         <div class="flex items-center gap-2">
-          <h3 class="text-amber-200 font-semibold text-sm">角色情报</h3>
+          <h3 class="text-stone-100 font-semibold text-sm">角色情报</h3>
           <button v-if="npcNames.length" @click="refreshAll" :disabled="extracting"
-            class="text-[11px] px-1.5 py-0.5 rounded border border-stone-600 text-stone-400 hover:text-amber-300 hover:border-amber-700 disabled:opacity-40"
+            class="app-button app-button-ghost"
             :title="extracting ? '提取中…' : 'AI 分析上下文，刷新所有角色情报'">
-            {{ extracting ? '⏳' : '🔄' }}
+            {{ extracting ? '提取中…' : '刷新全部' }}
           </button>
         </div>
         <button @click="close" class="text-stone-400 hover:text-stone-200 text-lg leading-none">✕</button>
@@ -144,15 +138,15 @@ function close() {
       <!-- NPC 列表 -->
       <div v-if="npcNames.length" class="space-y-3">
         <div v-for="name in npcNames" :key="name"
-          class="rounded-lg border border-stone-700 bg-stone-800/50 overflow-hidden">
+          class="app-npc-entry overflow-hidden">
 
           <!-- ═══ Header：名字 + 操作 ═══ -->
           <div class="flex items-center justify-between px-3 pt-2.5 pb-0.5">
             <span class="text-sm font-medium text-stone-100">{{ name }}</span>
             <button @click="refreshNpc(name)" :disabled="loading[name]"
-              class="text-[10px] px-1 py-0.5 rounded border border-stone-700 text-stone-500 hover:text-amber-400 hover:border-amber-800 disabled:opacity-30"
+              class="app-button app-button-ghost"
               :title="hasProfile(name) ? '重新分析上下文' : 'AI 提取该角色情报'">
-              {{ loading[name] ? '⏳' : '🔄' }}
+              {{ loading[name] ? '提取中…' : '刷新' }}
             </button>
           </div>
 
@@ -174,23 +168,23 @@ function close() {
                   <span v-if="getProfile(name).gender || getProfile(name).age" class="text-stone-600 mx-0.5">·</span>
                   <span v-if="getProfile(name).background">{{ getProfile(name).background }}</span>
                 </template>
-                <span v-else class="text-stone-600 italic">点击 🔄 提取情报</span>
+                <span v-else class="text-stone-600 italic">点击刷新提取情报</span>
               </p>
 
               <!-- 动态关系行 -->
               <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
                 <span v-if="getProfile(name).affection" class="inline-flex items-center gap-0.5 text-red-400">
-                  ❤️ {{ getProfile(name).affection }}
+                  好感 {{ getProfile(name).affection }}
                 </span>
                 <span v-if="getProfile(name).strength" class="inline-flex items-center gap-0.5 text-amber-400">
-                  ⚔️ {{ getProfile(name).strength }}
+                  实力 {{ getProfile(name).strength }}
                 </span>
               </div>
 
               <!-- 性格标签 -->
               <div v-if="getProfile(name).personality.length" class="flex flex-wrap gap-1">
                 <span v-for="tag in getProfile(name).personality" :key="tag"
-                  class="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-700/80 text-stone-300 border border-stone-600/50">
+                  class="app-chip">
                   {{ tag }}
                 </span>
               </div>
@@ -198,7 +192,7 @@ function close() {
               <!-- 喜好摘要 -->
               <p v-if="getProfile(name).preferences"
                 class="text-[11px] text-stone-400 leading-relaxed italic">
-                💬 {{ getProfile(name).preferences }}
+                {{ getProfile(name).preferences }}
               </p>
 
               <!-- 自定义备注 textarea（自动保存） -->
@@ -206,7 +200,7 @@ function close() {
                 :value="getProfile(name).customNotes"
                 @input="onCustomChange(name, $event.target.value)"
                 rows="2"
-                class="w-full mt-1 px-2 py-1 rounded bg-stone-700/60 border border-stone-600 text-stone-200 text-[11px] placeholder-stone-500 resize-y focus:border-amber-600/70 outline-none transition-colors"
+                class="app-input w-full mt-2 text-base resize-y"
                 placeholder="手动修改或补充该角色的隐藏设定…"
               ></textarea>
             </div>
@@ -215,7 +209,7 @@ function close() {
       </div>
 
       <!-- 空状态 -->
-      <p v-else class="text-xs text-stone-500 py-6 text-center leading-relaxed">
+      <p v-else class="app-empty-state">
         暂无已知 NPC<br>
         <span class="text-stone-600">游戏进程中出现好感度变化的角色会出现在这里</span>
       </p>
@@ -226,8 +220,8 @@ function close() {
   <transition name="fade">
     <div v-if="toast"
       :class="[
-        'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg text-sm shadow-lg',
-        toastType === 'err' ? 'bg-red-900/90 text-red-100' : 'bg-emerald-800/90 text-emerald-100'
+        'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 text-sm app-toast',
+        toastType === 'err' ? 'app-toast-danger' : 'app-toast-success'
       ]">
       {{ toast }}
     </div>

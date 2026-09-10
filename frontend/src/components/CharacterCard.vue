@@ -56,9 +56,9 @@ const genericRows = computed(() => {
 </script>
 
 <template>
-  <div class="max-w-xl mx-auto px-4 py-8">
-    <div class="rounded-lg border border-amber-800/60 bg-stone-900/80 p-6 shadow-2xl">
-      <h2 class="text-center text-2xl font-bold text-amber-200 mb-1">角色档案卡</h2>
+  <div class="app-flow max-w-xl mx-auto px-4 py-8">
+    <div class="app-character-review p-6">
+      <h2 class="text-center text-2xl font-bold text-stone-100 mb-1">你的角色</h2>
       <p class="text-center text-sm text-stone-500 mb-6">
         {{ isGeneric ? `确认后，你在「${world.name}」的旅程正式开始` : '确认后，你的魂兽大陆之行正式开始' }}
       </p>
@@ -66,33 +66,33 @@ const genericRows = computed(() => {
       <!-- 通用世界（自建）：按 creation_schema 字段展示 -->
       <dl v-if="isGeneric" class="space-y-2 text-sm">
         <div v-for="row in genericRows" :key="row.label"
-          class="flex justify-between border-b border-stone-800 pb-2">
-          <dt class="text-stone-400">{{ row.label }}</dt>
-          <dd class="text-stone-100 text-right">{{ row.value }}</dd>
+          class="app-character-row">
+          <dt class="app-character-label">{{ row.label }}</dt>
+          <dd class="app-character-value">{{ row.value }}</dd>
         </div>
       </dl>
 
       <!-- 魂兽大陆：专属档案卡 -->
       <dl v-else class="space-y-2 text-sm">
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">姓名</dt><dd class="text-stone-100">{{ card.name }}（{{ card.gender }}，{{ card.age }}岁）</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">身份</dt><dd class="text-stone-100 text-right">{{ card.identity }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">武魂</dt><dd class="text-stone-100">{{ card.wuhun }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">天赋</dt><dd class="text-stone-100 text-right">{{ card.talent }}，先天魂力 {{ card.innate }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">发展方向</dt><dd class="text-stone-100">{{ card.direction }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">出身</dt><dd class="text-stone-100 text-right">{{ card.origin }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">家庭</dt><dd class="text-stone-100 text-right">{{ card.family }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">执念/秘密</dt><dd class="text-stone-100 text-right">{{ card.secret }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">外貌</dt><dd class="text-stone-100 text-right">{{ card.traits }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">性格</dt><dd class="text-stone-100 text-right">{{ card.personality }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">变强渴望</dt><dd class="text-stone-100">{{ card.desire }}/10</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">游玩方向</dt><dd class="text-stone-100">{{ card.playDirection }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">时间线绑定</dt><dd class="text-stone-100">{{ card.binding }}</dd></div>
-        <div class="flex justify-between border-b border-stone-800 pb-2"><dt class="text-stone-400">初始财富</dt><dd class="text-stone-100">{{ card.gold }} 金魂币</dd></div>
-        <div class="flex justify-between pb-2"><dt class="text-stone-400">特殊物品</dt><dd class="text-stone-100 text-right">{{ card.items }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">姓名</dt><dd class="app-character-value">{{ card.name }}（{{ card.gender }}，{{ card.age }}岁）</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">身份</dt><dd class="app-character-value">{{ card.identity }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">武魂</dt><dd class="app-character-value">{{ card.wuhun }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">天赋</dt><dd class="app-character-value">{{ card.talent }}，先天魂力 {{ card.innate }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">发展方向</dt><dd class="app-character-value">{{ card.direction }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">出身</dt><dd class="app-character-value">{{ card.origin }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">家庭</dt><dd class="app-character-value">{{ card.family }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">执念/秘密</dt><dd class="app-character-value">{{ card.secret }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">外貌</dt><dd class="app-character-value">{{ card.traits }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">性格</dt><dd class="app-character-value">{{ card.personality }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">变强渴望</dt><dd class="app-character-value">{{ card.desire }}/10</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">游玩方向</dt><dd class="app-character-value">{{ card.playDirection }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">时间线绑定</dt><dd class="app-character-value">{{ card.binding }}</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">初始财富</dt><dd class="app-character-value">{{ card.gold }} 金魂币</dd></div>
+        <div class="app-character-row"><dt class="app-character-label">特殊物品</dt><dd class="app-character-value">{{ card.items }}</dd></div>
       </dl>
       <div class="mt-8 flex gap-3">
-        <button @click="emit('back')" class="flex-1 px-4 py-2 rounded bg-stone-800 text-stone-300">返回修改</button>
-        <button @click="emit('confirm')" class="flex-1 px-4 py-2 rounded bg-amber-600 text-stone-950 font-medium">确认，开始游戏</button>
+        <button @click="emit('back')" class="app-button app-button-secondary flex-1">返回修改</button>
+        <button @click="emit('confirm')" class="app-button app-button-primary flex-1">开始人生</button>
       </div>
     </div>
   </div>

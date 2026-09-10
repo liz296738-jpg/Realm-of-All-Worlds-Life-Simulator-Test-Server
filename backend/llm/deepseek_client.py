@@ -10,6 +10,10 @@ _key = os.getenv("DEEPSEEK_API_KEY")
 # 服务端 key 可选：未配置时纯 BYOK（每位玩家填自己的 key）。
 _client = OpenAI(api_key=_key, base_url="https://api.deepseek.com") if _key else None
 MODEL = "deepseek-chat"
+# deepseek-chat 的 max_tokens 合法区间是 [1, 8192]，超出会被直接拒绝
+# （HTTP 400 invalid_request_error），服务端不做自动钳制。所有调用方的 max_tokens
+# 都必须过这道上限——越界的话异常会被 _call_turn 吞掉，玩家只看到模板叙述 + 单选项。
+MODEL_MAX_TOKENS = 8192
 # 输出 token 上限：限长既控成本又控延迟——叙述/结算无限长是"生成慢"的主因之一。
 NARRATIVE_MAX_TOKENS = 1200
 # 结算 JSON 的 max_tokens。实测真实回合（丰富 state_template）结算输出 650~900 字 ≈ 500~680 token，
@@ -113,6 +117,9 @@ def _call_turn(messages: list[dict], api_key: str | None = None,
 
     失败时有界重试（1次纠偏），彻底失败返回 {}，调用方走 fallback。
     """
+    import logging
+    logger = logging.getLogger(__name__)
+
     client = _client_for(api_key)
     for attempt in range(2):
         try:
@@ -120,7 +127,8 @@ def _call_turn(messages: list[dict], api_key: str | None = None,
                 model=MODEL,
                 messages=messages,
                 temperature=0.7,
-                max_tokens=max_tokens,
+                # 兜底钳制：routes 层已按档位算好，这里再挡一道，防止任何调用方越界被 400。
+                max_tokens=min(max_tokens, MODEL_MAX_TOKENS),
                 response_format={"type": "json_object"},
             )
             text = resp.choices[0].message.content or "{}"
@@ -130,16 +138,29 @@ def _call_turn(messages: list[dict], api_key: str | None = None,
             if (isinstance(narrative, str) and len(narrative) >= NARRATIVE_MIN_CHARS
                     and isinstance(opts, list) and len(opts) > 0):
                 return data
-        except Exception:
-            pass
-        # 纠偏重试
+            # 记录验证失败的具体原因
+            logger.warning(f"_call_turn 验证失败 (attempt {attempt + 1}): "
+                          f"narrative 长度={len(narrative) if isinstance(narrative, str) else 'N/A'}, "
+                          f"options 类型={type(opts).__name__}, options 长度={len(opts) if isinstance(opts, list) else 'N/A'}")
+        except Exception as e:
+            logger.warning(f"_call_turn 异常 (attempt {attempt + 1}): {e}")
+        # 纠偏重试：明确要求 options 必须包含 3-4 个完整选项
         if attempt == 0:
             messages = list(messages)
             if messages and messages[-1].get("role") == "user":
                 nudge = (
-                    "\n\n（你上一次输出的 JSON 不满足要求——narrative 字段缺少有效叙述，"
-                    "或 options 数组为空/缺失。请重新输出完整 JSON，确保 narrative 是"
-                    "充实的叙述正文，options 包含 3-4 个不同选项。这是最后一次机会。）"
+                    "\n\n【🔥 紧急纠正指令 🔥】\n"
+                    "你上一次的输出不符合要求！问题可能是：\n"
+                    "1. narrative 字段为空或太短（必须至少 30 字的完整叙述）\n"
+                    "2. options 数组缺失、为空、或少于 3 个选项\n"
+                    "3. JSON 被截断导致格式错误\n\n"
+                    "【强制要求】请立即重新输出，必须包含：\n"
+                    "• narrative: 完整的故事叙述（至少 30 字）\n"
+                    "• options: 数组，包含恰好 3-4 个选项对象，每个含 label/text/recommended 三字段\n"
+                    "• state_delta: 对象（可为空 {}）\n"
+                    "• notes: 数组（可为空 []）\n"
+                    "• event: 字符串（可为空 \"\"）\n\n"
+                    "这是最后一次机会，请务必输出完整合法的 JSON！"
                 )
                 messages[-1] = {**messages[-1],
                                 "content": messages[-1].get("content", "") + nudge}

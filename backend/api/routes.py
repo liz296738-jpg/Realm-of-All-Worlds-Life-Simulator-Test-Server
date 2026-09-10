@@ -21,7 +21,7 @@ from auth.subscription import (
     _gate_for, _bump_trial,
 )
 from llm.deepseek_client import (
-    MODEL, SETTLE_MAX_TOKENS, NARRATIVE_MIN_CHARS,
+    MODEL, MODEL_MAX_TOKENS, SETTLE_MAX_TOKENS, NARRATIVE_MIN_CHARS,
     _client_for, _friendly_err, _call_turn,
 )
 from game import exporter
@@ -265,7 +265,11 @@ def _run_turn(session_id: str, player_action: str, opening: bool = False,
         turn_history = base_history + [user_msg]
         msgs = build_unified_messages(state, turn_history, player_action, tier["chars"], world)
 
-    unified_max_tokens = tier["max_tokens"] + SETTLE_MAX_TOKENS
+    # 统一调用需要足够空间容纳 narrative + options + state_delta
+    # 给 options/delta/notes/event 预留充足空间（6000），支持复杂场景和长叙述。
+    # 但必须钳到模型上限内：档位 4/5 加满 6000 是 8400/9200，超过 deepseek-chat 的
+    # 8192 会被直接 400，而异常被 _call_turn 吞掉后会静默降级成模板叙述 + 单选项。
+    unified_max_tokens = min(tier["max_tokens"] + 6000, MODEL_MAX_TOKENS)
 
     def gen():
         try:

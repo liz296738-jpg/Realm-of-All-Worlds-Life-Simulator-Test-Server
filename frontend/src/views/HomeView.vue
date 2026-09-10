@@ -2,16 +2,50 @@
 import { ref, computed, onMounted } from 'vue'
 import { api } from '../api'
 import {
-  ui, worlds, loadWorlds, SITE_NAME,
-  entitlement, refreshEntitlement, fmtDate, clientId, setActivationOpen,
+  worlds, loadWorlds, SITE_NAME,
+  refreshEntitlement, clientId,
 } from '../store'
+import WorldFeaturedCard from '../components/WorldFeaturedCard.vue'
+import WorldListItem from '../components/WorldListItem.vue'
+import CoverLightbox from '../components/CoverLightbox.vue'
 
-const emit = defineEmits(['newGame', 'continue'])
+const emit = defineEmits(['newGame', 'continue', 'open-settings'])
 const sessions = ref([])
+const previewCover = ref(null)
 
-// ── 世界搜索 / 折叠 ─────────────────────────────
+// ── 世界封面映射（预留）：未来填入真实图片路径，无需改组件结构 ──
+const WORLD_COVERS = {
+  douluo: '/world-covers/douluo.webp',
+  gebi: '/world-covers/gebi.webp',
+  shanhe: '/world-covers/shanhe.webp',
+  shengluolan: '/world-covers/shengluolan.webp',
+  shuguang: '/world-covers/shuguang.webp',
+  taishangfuli: '/world-covers/taishangfuli.webp',
+  wanwusheng: '/world-covers/wanwusheng.webp',
+  yongzhou: '/world-covers/yongzhou.webp',
+  zhenshi: '/world-covers/zhenshi.webp',
+  zhujie: '/world-covers/zhujie.webp',
+}
+function worldCover(w) {
+  return (w && WORLD_COVERS[w.id]) || null
+}
+
+function openCover(world) {
+  const src = worldCover(world)
+  if (!src) return
+  previewCover.value = { src, title: world.name }
+}
+
+function closeCover() {
+  previewCover.value = null
+}
+
+// ── 分段控件：创作者世界 / 我的世界 ──
+const activeWorldTab = ref('featured')  // 'featured' | 'mine'
+const showWorldBuilder = ref(false)
+
+// ── 世界搜索 ──
 const searchQuery = ref('')
-const isWorldsCollapsed = ref(false)
 const filteredWorlds = computed(() => {
   const q = searchQuery.value.trim().toLowerCase()
   if (!q) return worlds.builtin
@@ -20,24 +54,21 @@ const filteredWorlds = computed(() => {
     (w.desc || '').toLowerCase().includes(q)
   )
 })
+const featuredWorld = computed(() => filteredWorlds.value[0] || null)
+const restWorlds = computed(() => filteredWorlds.value.slice(1))
 
-// ── 上传小说 → 建世界 ─────────────────────────────
+// ── 快捷存档：取 sessions 首项作为首页快捷入口（后端目前无可靠更新时间字段，
+//    故不伪称“最近/上次”，仅作“继续冒险”快捷位） ──
+const quickSave = computed(() => sessions.value[0] || null)
+
+// ── 上传小说 → 建世界 ──
 const file = ref(null)
+const fileName = ref('')
 const apiKey = ref(localStorage.getItem('douluo_api_key') || '')
 const buildPhase = ref('')      // '' | 'uploading' | 'error' | 'done'
 const buildMsg = ref('')
 const deleting = ref('')        // 正在删除的世界 id
-const exporting = ref(false)
-const dataMsg = ref('')
-const dataMsgType = ref('ok')  // 'ok' | 'err'
-const refreshing = ref(false)
-
-const statusText = computed(() => {
-  if (entitlement.loading) return '加载中…'
-  if (entitlement.paid) return `已订阅 · 无限游玩（至 ${fmtDate(entitlement.paidUntil)}）`
-  const left = Math.max(0, entitlement.trialLimit - entitlement.trialUsed)
-  return `免费试玩中 · 剩余 ${left} 回合 · 1元/月无限玩`
-})
+const fileInput = ref(null)
 
 async function buildWorld() {
   if (buildPhase.value === 'uploading') return
@@ -54,8 +85,9 @@ async function buildWorld() {
     const w = await api.buildWorld(fd)
     await loadWorlds()
     buildPhase.value = 'done'
-    buildMsg.value = `世界「${w.name}」创建成功！可在下方「我的世界」里进入。`
+    buildMsg.value = `世界「${w.name}」创建成功！可在「我的世界」里进入。`
     file.value = null
+    fileName.value = ''
   } catch (e) {
     buildPhase.value = 'error'
     buildMsg.value = e.message
@@ -64,6 +96,17 @@ async function buildWorld() {
 
 function onKeyInput(e) { localStorage.setItem('douluo_api_key', e.target.value.trim()) }
 
+function onFileChange(e) {
+  file.value = e.target.files[0]
+  fileName.value = file.value ? file.value.name : ''
+  buildMsg.value = ''
+}
+
+function pickFile() {
+  if (buildPhase.value === 'uploading') return
+  fileInput.value?.click()
+}
+
 async function delWorld(w) {
   if (!confirm(`确定删除自建世界「${w.name}」吗？该世界的存档不会受影响，但世界本身不可恢复。`)) return
   deleting.value = w.id
@@ -71,70 +114,6 @@ async function delWorld(w) {
     await api.deleteWorld({ world_id: w.id, client_id: clientId() })
     await loadWorlds()
   } catch (e) { alert(e.message) } finally { deleting.value = '' }
-}
-
-async function exportData() {
-  if (exporting.value) return
-  exporting.value = true
-  dataMsg.value = ''
-  try {
-    const blob = await api.exportAll({ client_id: clientId() })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    const ts = new Date().toISOString().slice(0, 10).replace(/-/g, '')
-    a.download = `万界人生模拟器-备份-${ts}.json`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
-    dataMsg.value = '导出成功，请妥善保存文件'
-    dataMsgType.value = 'ok'
-  } catch (e) {
-    dataMsg.value = '导出失败：' + e.message
-    dataMsgType.value = 'err'
-  } finally { exporting.value = false }
-}
-
-async function importData(e) {
-  const f = e.target.files?.[0]
-  if (!f) return
-  dataMsg.value = '正在导入…'
-  dataMsgType.value = 'ok'
-  try {
-    const fd = new FormData()
-    fd.append('file', f)
-    fd.append('client_id', clientId())
-    const r = await api.importAll(fd)
-    const parts = []
-    if (r.worlds_imported) parts.push(`${r.worlds_imported} 个世界`)
-    if (r.saves_imported) parts.push(`${r.saves_imported} 个存档`)
-    const skipped = (r.worlds_skipped || 0) + (r.saves_skipped || 0)
-    let msg = parts.length ? `已恢复 ${parts.join('、')}` : '没有新数据可导入'
-    if (skipped) msg += `，${skipped} 项已存在已跳过`
-    dataMsg.value = msg
-    dataMsgType.value = 'ok'
-    await loadWorlds()
-    try { const d = await api.saves(clientId()); sessions.value = d.saves || [] } catch {}
-  } catch (e) {
-    dataMsg.value = '导入失败：' + e.message
-    dataMsgType.value = 'err'
-  }
-  e.target.value = ''
-}
-
-async function refreshPage() {
-  if (refreshing.value) return
-  refreshing.value = true
-  try {
-    await loadWorlds()
-    try { const d = await api.saves(clientId()); sessions.value = d.saves || [] } catch {}
-    dataMsg.value = '页面已刷新'
-    dataMsgType.value = 'ok'
-  } catch {
-    dataMsg.value = '刷新失败'
-    dataMsgType.value = 'err'
-  } finally { refreshing.value = false }
 }
 
 // 找出与指定世界关联的存档
@@ -146,6 +125,10 @@ function continueSave(save) {
   emit('continue', save)
 }
 
+function enterWorld(w) {
+  emit('newGame', w)
+}
+
 onMounted(async () => {
   refreshEntitlement()
   loadWorlds()
@@ -154,168 +137,127 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="h-full overflow-y-auto px-6 py-10">
-    <div class="max-w-3xl mx-auto">
-      <!-- 平台标题 -->
-      <div class="text-center mb-8">
-        <h1 class="text-3xl md:text-4xl font-bold text-amber-200 mb-3 tracking-wide">{{ SITE_NAME }}</h1>
-        <p class="text-stone-400 text-sm md:text-base leading-relaxed">
-          一个容纳众多模拟世界的文字 RPG 平台。选择你感兴趣的世界，从出生开始书写属于你的人生。
-        </p>
-      </div>
+  <div class="h-full">
+    <!-- 滚动内容区 -->
+    <div class="h-full overflow-y-auto">
+      <div class="max-w-2xl mx-auto px-5"
+        style="padding-bottom: calc(96px + var(--safe-bottom));">
 
-      <!-- 创作者已开发的世界 -->
-      <section class="mb-10">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold text-stone-300 flex items-center gap-2">
-            ✦ 创作者已开发的世界
-          </h2>
-          <div class="flex items-center">
-            <input v-model="searchQuery" placeholder="搜索世界..." class="bg-stone-800 border border-stone-700 text-stone-200 text-xs rounded px-2 py-1 w-24 focus:w-32 transition-all mr-2" />
-            <button @click="isWorldsCollapsed = !isWorldsCollapsed" class="text-xs text-stone-400 hover:text-amber-300 whitespace-nowrap">
-              {{ isWorldsCollapsed ? '展开 ▼' : '收起 ▲' }}
-            </button>
-          </div>
-        </div>
-        <div v-if="worlds.builtin.length" v-show="!isWorldsCollapsed" class="grid gap-3 sm:grid-cols-2">
-          <div v-for="w in filteredWorlds" :key="w.id"
-            class="rounded-lg border border-amber-800/50 bg-stone-900/70 p-5 flex flex-col hover:border-amber-500/70 transition">
-            <div class="flex items-center justify-between mb-1">
-              <h3 class="text-xl font-bold text-amber-200">{{ w.name }}</h3>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-900/60 text-amber-300">创作者</span>
-            </div>
-            <p class="text-sm text-stone-400 flex-1 mb-4">{{ w.desc }}</p>
-            <div class="space-y-2">
-              <button v-if="saveForWorld(w.id)" @click="continueSave(saveForWorld(w.id))"
-                class="w-full py-2.5 rounded-lg bg-emerald-700 text-white font-medium hover:bg-emerald-600 transition text-sm">
-                ▶ 继续冒险（{{ saveForWorld(w.id).name }} · 第{{ saveForWorld(w.id).turn }}回合）
-              </button>
-              <button @click="emit('newGame', w)"
-                class="w-full py-2.5 rounded-lg bg-amber-600 text-stone-950 font-medium hover:bg-amber-500 transition">
-                进入「{{ w.name }}」
-              </button>
-            </div>
-          </div>
-          <p v-if="searchQuery && !filteredWorlds.length" class="text-sm text-stone-500 sm:col-span-2">没有找到匹配「{{ searchQuery }}」的世界</p>
-        </div>
-        <p v-else class="text-sm text-stone-500">世界加载中…</p>
-      </section>
+        <!-- 品牌 Hero -->
+        <header class="home-hero">
+          <h1 class="home-hero-title">{{ SITE_NAME }}<span class="home-hero-dot">。</span></h1>
+          <p class="home-hero-subtitle">穿行不同世界，书写属于你的另一种人生。</p>
+        </header>
 
-      <!-- 我的世界 -->
-      <section class="mb-10">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold text-stone-300">✦ 我的世界</h2>
-          <span class="text-xs text-stone-500">仅你自己可见</span>
+        <!-- 分段控件：互斥切换用 aria-pressed（不做 ARIA tabs，避免承诺整套 tabpanel/方向键契约） -->
+        <div class="home-segmented" role="group" aria-label="世界类型">
+          <button type="button" :aria-pressed="activeWorldTab === 'featured'"
+            @click="activeWorldTab = 'featured'">创作者世界</button>
+          <button type="button" :aria-pressed="activeWorldTab === 'mine'"
+            @click="activeWorldTab = 'mine'">我的世界</button>
         </div>
-        <div v-if="worlds.mine.length" class="grid gap-3 sm:grid-cols-2">
-          <div v-for="w in worlds.mine" :key="w.id"
-            class="rounded-lg border border-stone-700 bg-stone-900/70 p-5 flex flex-col hover:border-stone-500 transition">
-            <div class="flex items-center justify-between mb-1">
-              <h3 class="text-lg font-bold text-stone-200">{{ w.name }}</h3>
-              <button @click="delWorld(w)" :disabled="deleting === w.id"
-                class="text-xs text-stone-500 hover:text-red-400 transition disabled:opacity-30">删除</button>
-            </div>
-            <p class="text-sm text-stone-400 flex-1 mb-4">{{ w.desc || '由你上传小说生成的专属世界' }}</p>
-            <div class="space-y-2">
-              <button v-if="saveForWorld(w.id)" @click="continueSave(saveForWorld(w.id))"
-                class="w-full py-2.5 rounded-lg bg-emerald-700 text-white font-medium hover:bg-emerald-600 transition text-sm">
-                ▶ 继续冒险（{{ saveForWorld(w.id).name }} · 第{{ saveForWorld(w.id).turn }}回合）
-              </button>
-              <button @click="emit('newGame', w)"
-                class="w-full py-2.5 rounded-lg border border-amber-600/60 text-amber-200 hover:bg-amber-900/30 transition">
-                进入「{{ w.name }}」
-              </button>
-            </div>
-          </div>
-        </div>
-        <p v-else class="text-sm text-stone-500 mb-4">还没有自建世界——上传一本你喜欢的小说，AI 会帮你搭出它的世界框架。</p>
 
-        <!-- 上传小说建世界 -->
-        <div class="rounded-lg border border-dashed border-stone-600 bg-stone-900/40 p-5">
-          <h3 class="font-medium text-stone-300 mb-2">📖 上传小说 → 创建专属世界</h3>
-          <p class="text-xs text-stone-500 leading-relaxed mb-4">
-            上传小说的 <b>TXT</b> 或 <b>Word(.docx)</b> 文件（≤30MB），AI 会抽样精读并生成一套
-            可游玩的世界框架（规则书 + 资源属性 + 创建选项）。<br/>
-            建世界会调用 <b>你自己的 DeepSeek API Key</b> 计费（约几分钱），站点不代付；原文章节不会留存。
+        <!-- ── 创作者世界 ── -->
+        <section v-if="activeWorldTab === 'featured'" class="space-y-4">
+          <input v-model="searchQuery" type="search" class="app-input" placeholder="搜索世界…" aria-label="搜索世界" />
+
+          <!-- 加载中 / 真正为空（后端不可达）两态分开，避免“加载中…”永久占位 -->
+          <p v-if="worlds.loading && !worlds.builtin.length" class="home-empty">世界加载中…</p>
+          <p v-else-if="!worlds.builtin.length" class="home-empty">
+            世界暂不可用——请确认后端服务已启动。
+            <button type="button" class="home-retry" @click="loadWorlds">重新加载</button>
           </p>
-          <div class="space-y-3">
-            <input type="file" accept=".txt,.md,.docx"
-              @change="e => { file = e.target.files[0]; buildMsg = '' }"
-              class="block w-full text-sm text-stone-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-stone-700 file:text-stone-200 file:hover:bg-stone-600 file:cursor-pointer" />
-            <input v-model="apiKey" type="password" @input="onKeyInput" autocomplete="off" placeholder="你的 DeepSeek API Key（sk-...）"
-              class="w-full bg-stone-900 border border-stone-700 rounded-lg p-2.5 font-mono text-sm" />
-            <button @click="buildWorld" :disabled="buildPhase === 'uploading'"
-              class="w-full py-2.5 rounded-lg bg-amber-600 text-stone-950 font-medium hover:bg-amber-500 transition disabled:opacity-50">
+          <template v-else-if="featuredWorld">
+            <WorldFeaturedCard :world="featuredWorld" :save="saveForWorld(featuredWorld.id)"
+              :cover="worldCover(featuredWorld)" @enter="enterWorld(featuredWorld)" @continue="continueSave"
+              @preview="openCover(featuredWorld)" />
+
+            <div v-if="restWorlds.length" class="space-y-2">
+              <WorldListItem v-for="w in restWorlds" :key="w.id" :world="w"
+                :save="saveForWorld(w.id)" :cover="worldCover(w)"
+                @enter="enterWorld(w)" @continue="continueSave" @preview="openCover(w)" />
+            </div>
+          </template>
+          <p v-else class="home-empty">没有找到匹配「{{ searchQuery }}」的世界。</p>
+        </section>
+
+        <!-- ── 我的世界 ── -->
+        <section v-else class="space-y-4">
+          <!-- 建世界入口（折叠） -->
+          <button type="button" class="home-builder-cta" @click="showWorldBuilder = !showWorldBuilder"
+            :aria-expanded="showWorldBuilder">
+            <span aria-hidden="true">{{ showWorldBuilder ? '－' : '＋' }}</span>
+            <span>{{ showWorldBuilder ? '收起创建面板' : '上传小说，创建专属世界' }}</span>
+          </button>
+
+          <!-- 建世界上传表单 -->
+          <div v-if="showWorldBuilder" class="app-panel p-4 space-y-3">
+            <p class="text-xs leading-relaxed app-muted">
+              上传小说的 <b>TXT</b>、<b>Markdown(.md)</b> 或 <b>Word(.docx)</b> 文件（≤30MB），AI 会抽样精读并生成一套可游玩的世界框架（规则书 + 资源属性 + 创建选项）。建世界会调用 <b>你自己的 DeepSeek API Key</b> 计费（约几分钱），站点不代付；原文章节不会留存。
+            </p>
+            <input ref="fileInput" type="file" accept=".txt,.md,.docx" class="hidden" @change="onFileChange" />
+            <button type="button" class="app-button app-button-secondary w-full" @click="pickFile"
+              :disabled="buildPhase === 'uploading'">
+              {{ fileName ? '已选：' + fileName : '选择小说文件' }}
+            </button>
+            <input v-model="apiKey" type="password" @input="onKeyInput" autocomplete="off"
+              placeholder="你的 DeepSeek API Key（sk-...）" class="app-input" />
+            <button type="button" class="app-button app-button-primary w-full" @click="buildWorld"
+              :disabled="buildPhase === 'uploading'">
               {{ buildPhase === 'uploading' ? '⏳ 正在生成世界框架…' : '✨ 生成世界框架' }}
             </button>
-            <p v-if="buildMsg" :class="buildPhase === 'error' ? 'text-red-400' : 'text-emerald-400'"
+            <p v-if="buildMsg" :style="{ color: buildPhase === 'error' ? 'var(--danger)' : 'var(--success)' }"
               class="text-xs leading-relaxed">{{ buildMsg }}</p>
           </div>
-        </div>
-      </section>
 
-      <!-- 继续游戏 -->
-      <section v-if="sessions.length" class="mb-10">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-lg font-semibold text-stone-300">✦ 继续游戏</h2>
-          <button @click="emit('continue')"
-            class="text-xs text-stone-400 hover:text-amber-300 transition">
-            📂 全部存档
-          </button>
-        </div>
-        <ul class="space-y-2">
-          <li v-for="s in sessions" :key="s.session_id"
-            class="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800/60 px-4 py-3 hover:border-amber-700/60 transition">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="text-stone-100 font-medium truncate">{{ s.name }}</span>
-                <span class="text-xs text-amber-300/80 shrink-0">{{ s.level_field }} {{ s.level }}</span>
-              </div>
-              <div class="text-xs text-stone-400 mt-0.5 truncate">
-                {{ s.world_name }} · {{ s.place }} · 第{{ s.turn }}回合 · {{ s.date }}
-              </div>
+          <!-- 我的世界列表 -->
+          <template v-if="worlds.mine.length">
+            <WorldListItem v-for="w in worlds.mine" :key="w.id" :world="w" mine
+              :save="saveForWorld(w.id)" :cover="worldCover(w)" :deleting="deleting === w.id"
+              @enter="enterWorld(w)" @continue="continueSave" @remove="delWorld" @preview="openCover(w)" />
+          </template>
+          <p v-else-if="!showWorldBuilder" class="home-empty">
+            还没有自建世界——上传一本你喜欢的小说，AI 会帮你搭出它的世界框架。
+          </p>
+        </section>
+
+        <!-- ── 继续冒险（首页快捷存档入口） ── -->
+        <section v-if="quickSave" class="mt-8">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="app-section-title">继续冒险</h2>
+            <button type="button" class="text-xs app-muted hover:text-primary transition"
+              @click="emit('continue')">全部存档 ›</button>
+          </div>
+          <button type="button" class="home-recent-save" @click="continueSave(quickSave)">
+            <div class="home-recent-save-main">
+              <p class="world-row-title">{{ quickSave.name }}</p>
+              <p class="text-xs app-muted mt-0.5 truncate">
+                {{ quickSave.world_name }} · {{ quickSave.place }} · 第{{ quickSave.turn }}回合 · {{ quickSave.date }}
+              </p>
             </div>
-            <button @click="continueSave(s)"
-              class="shrink-0 ml-3 px-3 py-1.5 rounded text-xs font-medium bg-amber-600 text-stone-950 hover:bg-amber-500 transition">
-              继续
-            </button>
-          </li>
-        </ul>
-      </section>
-
-      <!-- 数据备份 -->
-      <div class="text-center mt-6 pt-6 border-t border-stone-800">
-        <div class="flex justify-center gap-4">
-          <button @click="exportData" :disabled="exporting"
-            class="text-xs text-stone-400 hover:text-amber-300 transition disabled:opacity-40">
-            {{ exporting ? '⏳ 导出中…' : '📥 导出数据' }}
+            <span class="home-recent-save-arrow" aria-hidden="true">继续 ›</span>
           </button>
-          <label class="text-xs text-stone-400 hover:text-amber-300 transition cursor-pointer">
-            📤 导入恢复
-            <input type="file" accept=".json" @change="importData" class="hidden" />
-          </label>
-          <button @click="refreshPage" :disabled="refreshing"
-            class="text-xs text-stone-400 hover:text-amber-300 transition disabled:opacity-40">
-            {{ refreshing ? '⏳' : '🔄' }} 刷新页面
-          </button>
-        </div>
-        <p class="text-[11px] text-stone-600 mt-1">定期导出备份，浏览器清缓存后可导入恢复</p>
-        <p v-if="dataMsg" :class="[
-          'text-sm mt-3 px-3 py-2 rounded-lg border text-center',
-          dataMsgType === 'err'
-            ? 'bg-red-900/40 border-red-800 text-red-200'
-            : 'bg-emerald-900/40 border-emerald-800 text-emerald-100'
-        ]">{{ dataMsg }}</p>
-      </div>
-
-      <!-- 订阅 / 免费试玩状态 -->
-      <div class="text-center mt-8">
-        <button @click="setActivationOpen(true)"
-          class="text-xs text-stone-400 hover:text-amber-300 transition">
-          💳 订阅 / 激活码
-        </button>
-        <p class="text-[11px] text-stone-600 mt-1">{{ statusText }}</p>
+        </section>
       </div>
     </div>
+
+    <!-- 底部导航 -->
+    <nav class="home-bottom-nav" aria-label="主导航">
+      <button type="button" class="home-bottom-nav-item" aria-current="page" aria-label="首页">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5" /><path d="M5 9.5V21h14V9.5" /></svg>
+        <span>首页</span>
+      </button>
+      <button type="button" class="home-bottom-nav-item" @click="emit('continue')" aria-label="存档">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l3 3v15H6z" /><path d="M9 3v6h6V3" /></svg>
+        <span>存档</span>
+      </button>
+      <button type="button" class="home-bottom-nav-item" @click="emit('open-settings')" aria-label="设置">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1" /></svg>
+        <span>设置</span>
+      </button>
+    </nav>
+
+    <CoverLightbox :open="!!previewCover" :src="previewCover?.src || ''" :title="previewCover?.title || ''"
+      @close="closeCover" />
   </div>
 </template>
